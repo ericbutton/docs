@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Enhanced Radar API",
   "colors": {
-    "primary": "#162BA3",
-    "light": "#C9BE07",
-    "dark": "#0F034F"
+    "primary": "#494949",
+    "light": "#FFFFFF",
+    "dark": "#202020"
   },
   "favicon": "/favicon.svg",
   "navigation": {
