@@ -84,8 +84,8 @@
     }
   },
   "logo": {
-    "light": "/images/api-light.svg",
-    "dark": "/images/api-dark.svg",
+    "light": "/images/api-dark.svg",
+    "dark": "/images/api-light.svg",
     "href": "https://enhancedradar.com/api"
   },
   "navbar": {
