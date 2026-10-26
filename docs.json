@@ -8,8 +8,8 @@
     "dark": "#202020"
   },
   "favicon": {
-    "light": "/images/blackblade.svg",
-    "dark": "/images/lightblade.svg"
+    "light": "/images/lightblade.svg",
+    "dark": "/images/blackblade.svg"
   },
   "navigation": {
     "tabs": [
