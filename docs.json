@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Enhanced Radar API",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#162BA3",
+    "light": "#C9BE07",
+    "dark": "#0F034F"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -118,5 +118,8 @@
       "github": "https://github.com/mintlify",
       "linkedin": "https://linkedin.com/company/mintlify"
     }
+  },
+  "background": {
+    "decoration": "grid"
   }
 }
