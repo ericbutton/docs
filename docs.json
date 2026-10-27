@@ -117,8 +117,5 @@
      "cursor",
      "vscode"
    ]
-  },
-  "background": {
-    "decoration": "grid"
   }
 }
