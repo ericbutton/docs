@@ -26,6 +26,15 @@
             ]
           },
           {
+            "group": "Concepts",
+            "pages": [
+              "concepts/pricing",
+              "concepts/pull-and-push",
+              "concepts/spending-controls",
+              "concepts/sources-and-coverage"
+            ]
+          },
+          {
             "group": "Customization",
             "pages": [
               "essentials/settings",
@@ -59,6 +68,18 @@
             "pages": [
               "api-reference/introduction",
               "codex-demo"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api-reference/transcripts",
+              "api-reference/events",
+              "api-reference/flight-status",
+              "api-reference/airport-status",
+              "api-reference/pireps",
+              "api-reference/answers",
+              "api-reference/subscriptions"
             ]
           },
           {

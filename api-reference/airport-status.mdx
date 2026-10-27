@@ -1,0 +1,49 @@
+---
+title: "Airport Status"
+description: "Follow runway use, traffic flow, restrictions and delays at an airport."
+icon: "tower-control"
+---
+
+Follow an airport's runway use, traffic flow, restrictions and delays, with the sources behind each fact and a list of what's missing.
+
+| | Price |
+| --- | --- |
+| Status update | 150 credits ($1.50), or $1,500 per 1,000 |
+
+You pay for the first status and for each real change. Rewording is free. Reading the sources is included; full source records cost extra.
+
+## Get an airport's status
+
+<div className="not-prose">`GET /airports/{icao}/status`</div>
+
+<Note>Parameter and field names are placeholders until the v1 OpenAPI spec is final.</Note>
+
+<ParamField path="icao" type="string" required>
+  Airport ICAO code, for example `KSFO`.
+</ParamField>
+<ParamField query="time" type="string">
+  The time to get the status for, in UTC. Defaults to now.
+</ParamField>
+
+### Response
+
+<ResponseField name="runways" type="array">Runways in use for arrivals and departures.</ResponseField>
+<ResponseField name="traffic_flow" type="string | null">The current traffic flow.</ResponseField>
+<ResponseField name="restrictions" type="array">Active restrictions.</ResponseField>
+<ResponseField name="delays" type="array">Reported delays.</ResponseField>
+<ResponseField name="sources" type="array">The transcripts behind each fact, with when each was reported.</ResponseField>
+<ResponseField name="missing" type="array">Facts we couldn't find.</ResponseField>
+
+## Status history
+
+<div className="not-prose">`GET /airports/{icao}/status/history`</div>
+
+Returns every status update for an airport over a time window.
+
+## Live updates
+
+To have updates sent to you, create a [subscription](/api-reference/subscriptions) with the `airport_status` dataset.
+
+## What it costs
+
+One airport with 75 status updates a day costs **$112.50 a day**, or **$41,062.50 a year**. Repeated reports may lower the bill.

@@ -1,0 +1,44 @@
+---
+title: "Subscriptions"
+description: "Have new data pushed to your webhook as soon as it's ready."
+icon: "webhook"
+---
+
+A subscription sends new data to your webhook as it's ready. Pushed items are charged at each product's push price. See [Pricing and credits](/concepts/pricing).
+
+## Create a subscription
+
+<div className="not-prose">`POST /subscriptions`</div>
+
+<Note>Field names other than the dataset names are placeholders until the v1 OpenAPI spec is final.</Note>
+
+<ParamField body="dataset" type="string" required>
+  One of `transcripts`, `events`, `flight_status`, `airport_status` or `pireps`.
+</ParamField>
+<ParamField body="filters" type="object">
+  The same filters as the dataset's pull endpoint: a callsign and time, an airport or an area. Events and PIREPs also take a `description`.
+</ParamField>
+<ParamField body="webhook_url" type="string" required>
+  The HTTPS URL to send updates to.
+</ParamField>
+
+```bash
+curl -X POST "$ER_API_BASE/subscriptions" \
+  -H "Authorization: Bearer $ER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dataset": "flight_status",
+    "filters": { "callsign": "UAL123", "time": "2026-10-24T18:00:00Z" },
+    "webhook_url": "https://your-app.example.com/webhooks/enhanced-radar"
+  }'
+```
+
+## Receiving updates
+
+- Each update arrives as a **signed HTTPS `POST`**.
+- Each update has a **unique ID** that stays the same across retries. Use it to skip duplicates.
+- Store the update, then return a `2xx` response.
+- We retry temporary failures with backoff. Retries are free.
+- You can recover missed updates for up to **24 hours**.
+
+See [Pull and push](/concepts/pull-and-push) for field conventions.
