@@ -1,0 +1,62 @@
+---
+title: "Live updates"
+description: "Stream live transcripts, events, flight statuses, airport statuses, and PIREPs over one Enhanced Radar WebSocket."
+---
+
+`GET /api/v0/live` opens one WebSocket. Subscribe to as many topics as you need on the same connection, and unsubscribe when you no longer want one.
+
+| Topic | Streams |
+| --- | --- |
+| [`transcripts`](/api-reference/live/transcripts) | Each new transmission that passes your filters. |
+| [`events`](/api-reference/live/events) | Events as they are reported and updated. |
+| [`flight_status`](/api-reference/live/flight-status) | One flight's status as it changes. |
+| [`airport_status`](/api-reference/live/airport-status) | One airport's complete status. |
+| [`pireps`](/api-reference/live/pireps) | Each new PIREP that matches a search. |
+
+## Connect and subscribe
+
+<Steps>
+  <Step title="Open the connection">
+    Send the API key on the upgrade request.
+
+    ```bash
+    websocat -H "Authorization: Bearer $ER_API_KEY" "wss://api.enhancedradar.com/api/v0/live"
+    ```
+  </Step>
+  <Step title="Subscribe">
+    Send `subscribe` with a topic and its `params`. A `request_id` lets you match the reply.
+
+    ```json
+    {"action": "subscribe", "request_id": "3f9a7c21-5d4e-4b8a-9c6f-0e2d1a7b4c85", "subscription_topic": "transcripts", "params": {"facility_id": "3667d976-1566-4887-ae34-c024d92f46c7"}}
+    ```
+  </Step>
+  <Step title="Handle updates">
+    The server replies `subscribed` with a `subscription_id`. Updates then arrive as `update` messages with the payload in `data`.
+  </Step>
+</Steps>
+
+See [Connect](/api-reference/live/connect) for the full message format.
+
+## Keep the connection alive
+
+- A connection with no traffic in either direction for 60 seconds is closed.
+- Send a WebSocket ping at least every 30 seconds. The server answers each ping with a pong.
+- The server sends no messages of its own while nothing matches, so don't rely on updates to keep the connection open.
+
+## Reconnect
+
+Reconnect whenever the connection closes. Subscriptions belong to the connection, so subscribe again after reconnecting.
+
+- There is no backfill: only what happens after a subscription starts is sent. Use the pull endpoints, such as [`GET /api/v0/transcripts`](/api-reference/transcripts/list), to fill any gap.
+- A client that falls 256 messages behind across all its subscriptions, or that does not accept a message within one second, is disconnected. Read messages promptly.
+- A client message over 4 KiB closes the connection.
+
+## Order and replace updates
+
+| Topic | How to handle updates |
+| --- | --- |
+| `transcripts` | Order by `received_at`. |
+| `events` | Replace an earlier message for the same `event_id` with the newer one. |
+| `flight_status` | Order by `status_at`. |
+| `airport_status` | Replace the previous status. Use `generated_at` to ignore one older than a status you already have. |
+| `pireps` | Order by `happened_at`; updates arrive in the order PIREPs are stored. |

@@ -1,0 +1,28 @@
+---
+title: "Health"
+description: "Liveness check for the Enhanced Radar API. Public, no authentication."
+api: "GET /health"
+authMethod: "none"
+---
+
+No authentication. Returns `200` with `{"status": "ok"}`.
+
+<ResponseField name="status" type="string">
+  Always `ok`.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.enhancedradar.com/health"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"status": "ok"}
+```
+
+</ResponseExample>

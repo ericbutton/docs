@@ -1,0 +1,30 @@
+---
+title: "Airport status topic"
+sidebarTitle: "airport_status"
+description: "Stream one airport's complete status over the live WebSocket as observations, operations, and weather change."
+---
+
+Streams one airport's status. Each update's `data` is a complete status with the same fields as [Get airport status](/api-reference/airports/status); replace the previous one with it. See [Connect](/api-reference/live/connect) for the message format.
+
+## Parameters
+
+<ParamField body="facility_id" type="string" required>
+  An airport `facility_id` from [List facilities](/api-reference/facilities/list). TRACON and center facilities are refused.
+</ParamField>
+
+```json
+{"action": "subscribe", "subscription_topic": "airport_status", "params": {"facility_id": "23b485da-06ec-4d7d-8dc3-aa45e7e809c9"}}
+```
+
+## Updates
+
+The first update is the current status, sent right after `subscribed`. After that, a new status is sent:
+
+- Each time an observation at the airport is created or updated.
+- Each time `operations` and `weather` are recomputed: within 5 minutes when they change, and at least every 10 minutes otherwise.
+
+Observations that age out of the 60-minute window do not cause an update; they are left out of the next one. Use `generated_at` to order updates and to ignore one older than a status you already have.
+
+## Refusals
+
+The subscription is refused when `facility_id` is missing or not a uuid, is not a covered facility, or is not an airport, or when the airport status could not be loaded; retry later.

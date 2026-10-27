@@ -1,0 +1,77 @@
+---
+title: "Get flight status"
+description: "Returns the latest status of one flight as of a given time, summarized from its most recent substantive ATC communication."
+api: "GET /api/v0/flights/status"
+---
+
+Returns the latest status of one flight as of a given time: a one-sentence summary of the most recent substantive ATC communication with the flight, such as a clearance, an instruction, or a pilot report. Readbacks, check-ins, and sign-offs do not change the status. The status is built from the flight's transmissions on available channels in the hour before `at`.
+
+## Query parameters
+
+<ParamField query="callsign" type="string" required>
+  ICAO callsign, e.g. `UAL406`. Case-insensitive.
+</ParamField>
+
+<ParamField query="at" type="string" required>
+  The time to report the status as of, RFC 3339. Must not be in the future. Selects transmissions by `received_at` as the API returns it.
+</ParamField>
+
+## Response
+
+<ResponseField name="callsign" type="string">
+  The requested callsign, normalized to upper case.
+</ResponseField>
+
+<ResponseField name="at" type="string">
+  The requested time, in UTC.
+</ResponseField>
+
+<ResponseField name="status" type="string | null">
+  One-sentence status. `null` when the flight had no substantive communication on available channels in the hour before `at`, including when the callsign is unknown.
+</ResponseField>
+
+<ResponseField name="status_at" type="string | null">
+  `received_at` of the transmission the status was determined from, accurate to within 20 seconds.
+</ResponseField>
+
+<ResponseField name="atc_channel_id" type="integer | null">
+  The channel the flight was communicating on.
+</ResponseField>
+
+<ResponseField name="facility_ids" type="string[]">
+  Facilities that own `atc_channel_id`.
+</ResponseField>
+
+<Warning>
+  Statuses are written by a language model from transcripts and can contain mistakes. Check important details against the transcripts from `GET /api/v0/transcripts?callsign=...`.
+</Warning>
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | `callsign` or `at` is missing, `at` is invalid, or `at` is in the future. |
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/flights/status?callsign=DAL1277&at=2026-10-23T00:34:24Z"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "callsign": "DAL1277",
+  "at": "2026-10-23T00:34:24Z",
+  "status": "Instructed to maintain 280 knots and contact LA Center on 132.85",
+  "status_at": "2026-10-23T00:33:43.983611Z",
+  "atc_channel_id": 820,
+  "facility_ids": ["ae40254d-1aeb-4a43-93b5-82d7e61d1202"]
+}
+```
+
+</ResponseExample>

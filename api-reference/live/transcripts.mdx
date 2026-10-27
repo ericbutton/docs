@@ -1,0 +1,44 @@
+---
+title: "Transcripts topic"
+sidebarTitle: "transcripts"
+description: "Stream the transcript of each new ATC transmission that passes your filters over the live WebSocket."
+---
+
+Streams the transcript of each new ATC transmission that passes the subscription's filters, as soon as it is processed. See [Connect](/api-reference/live/connect) for the message format.
+
+## Parameters
+
+At least one parameter is required.
+
+<ParamField body="callsign" type="string">
+  Only transmissions attributed to this flight, by ICAO callsign.
+</ParamField>
+
+<ParamField body="facility_id" type="string">
+  Only transmissions on this facility's available channels.
+</ParamField>
+
+<ParamField body="atc_channel_ids" type="integer[]">
+  Array of channel ids, e.g. `[4, 7, 8]`. Only transmissions on these channels. With `facility_id`, only the channels in both.
+</ParamField>
+
+<ParamField body="airline_id" type="integer">
+  Only transmissions attributed to a flight of this airline, from [List airlines](/api-reference/airlines/list).
+</ParamField>
+
+```json
+{"action": "subscribe", "subscription_topic": "transcripts", "params": {"facility_id": "3667d976-1566-4887-ae34-c024d92f46c7"}}
+```
+
+## Updates
+
+Each update's `data` has the same fields as one entry of `transcripts` in [List transcripts](/api-reference/transcripts/list), without `search_score`.
+
+- Only transmissions on available channels that have a transcript are sent.
+- `callsigns` and the `callsign` and `airline_id` filters use the flights the transmission was attributed to when it was processed; a later correction does not send the transmission again.
+- Use `received_at` to order transcripts.
+- Use [Get transcript audio](/api-reference/transcripts/audio) for a transmission's audio.
+
+## Refusals
+
+The subscription is refused when no parameter was given, or when a filter is invalid, such as an unknown `airline_id`, a facility that is not covered, an unavailable channel, or `atc_channel_ids` with none on `facility_id`.

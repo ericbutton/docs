@@ -1,0 +1,154 @@
+---
+title: "Create answer"
+description: "Answers a question about aviation operations from radio transcripts, ADS-B, FAA SWIM records, weather, and the web, with the evidence behind it."
+api: "POST /api/v0/answers"
+---
+
+Answers a question about aviation operations by researching radio transcripts from channels available to the API, ADS-B aircraft positions, FAA SWIM records (ground stops, flow programs, EDCTs, holds, diversions, airport configuration, surface movements), weather, and the public web. Returns the answer and the records it rests on.
+
+Nothing is stored between requests. To ask a follow-up, send the earlier questions and answers again in `messages`, with the new question last. Earlier answers are used only to understand what the new question refers to; every answer is researched again from the records.
+
+<Note>
+  An answer usually takes from several seconds to a few minutes. Keep the connection open until the response arrives.
+</Note>
+
+## Body
+
+JSON, at most 256 KiB.
+
+<ParamField body="messages" type="object[]" required>
+  The conversation, oldest first, 1 to 40 messages. Each is `{"role": "user" | "assistant", "content": "..."}`. The last message must have role `user`.
+</ParamField>
+
+<ParamField body="format" default="text" type="string">
+  `text`, `markdown`, or `json`. `markdown` quotes transmissions as links of the form `[words](audio:<audio_sample_id>)`.
+</ParamField>
+
+<ParamField body="json_schema" type="object">
+  Required with `format` `json`; not accepted with other formats. A JSON Schema object describing the answer, e.g. `{"type": "object", "properties": {"diverted": {"type": "boolean"}}}`. The answer is written to follow it but is not validated against it.
+</ParamField>
+
+<ParamField body="record_limit" default="5000" type="integer">
+  Most records to review, 300 to 50000. Research stops when it is reached, and the answer says what could not be checked. Lowered to what the organization's credits cover.
+</ParamField>
+
+<ParamField body="evidence_limit" default="25" type="integer">
+  Most evidence records to return, 0 to 50.
+</ParamField>
+
+## Response
+
+<ResponseField name="format" type="string">
+  The format of the answer.
+</ResponseField>
+
+<ResponseField name="answer_text" type="string">
+  The answer, for formats `text` and `markdown`.
+</ResponseField>
+
+<ResponseField name="answer_json" type="any">
+  The answer, for format `json`.
+</ResponseField>
+
+<ResponseField name="evidence" type="object">
+  The records the answer rests on, at most `evidence_limit` in total, most important first within each list. Every record was retrieved while answering.
+
+  <Expandable title="properties">
+    <ResponseField name="transcripts" type="array">
+      Transmissions, in the shape of [Get transcript](/api-reference/transcripts/get).
+    </ResponseField>
+
+    <ResponseField name="swim_records" type="array">
+      FAA SWIM records: `source_tool` names the kind of record (`surface_timeline`, `ground_stops`, `airport_config`, `edcts`, `holds`, or `diversions`), `source_record_id` identifies it, and `record` holds its fields.
+    </ResponseField>
+
+    <ResponseField name="adsb_positions" type="array">
+      ADS-B aircraft positions: `icao_hex`, `callsign`, `registration`, `seen_at`, `latitude`, `longitude`, `altitude_ft_baro` (feet, or `"ground"`), `ground_speed_kts`, `track_degrees`, and `squawk`.
+    </ResponseField>
+
+    <ResponseField name="web_pages" type="array">
+      Web pages that were read: `url`, `title`, and `published_at` when the page states it.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="records_reviewed" type="object">
+  Transmissions, ADS-B positions, and SWIM records reviewed while answering, and their `total`.
+</ResponseField>
+
+<ResponseField name="record_limit" type="integer">
+  The record limit used, after lowering it to what the organization's credits cover.
+</ResponseField>
+
+<ResponseField name="is_record_limit_reached" type="boolean">
+  Whether research stopped at the record limit.
+</ResponseField>
+
+<ResponseField name="records_charged" type="integer">
+  Records charged: `records_reviewed.total`, at least 300 and at most `record_limit`.
+</ResponseField>
+
+<Warning>
+  Answers are written by a language model from the records it reviewed and can contain mistakes. Check important details against the evidence.
+</Warning>
+
+## Credits
+
+Each record reviewed costs one credit, with a minimum of 300 per answer. The `X-Credits-Charged` and `X-Credit-Balance` response headers report the charge and the balance after it.
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | The body is not valid JSON, or a field is missing or invalid. `error` says which. |
+| `402` | The organization's credits do not cover the 300-record minimum. |
+| `502` | The answer could not be produced. Nothing is charged. Retry later. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST -H "Authorization: Bearer $ER_API_KEY" -H "Content-Type: application/json" \
+  "https://api.enhancedradar.com/api/v0/answers" \
+  -d '{"messages": [{"role": "user", "content": "Did United 254 divert last night?"}], "format": "json", "json_schema": {"type": "object", "properties": {"diverted": {"type": "boolean"}, "diversion_airport": {"type": "string"}}}}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "format": "json",
+  "answer_json": {"diverted": true, "diversion_airport": "KDEN"},
+  "evidence": {
+    "transcripts": [
+      {
+        "audio_sample_id": "0000067e-8b4f-47cf-9a62-69d24bc0c5dd",
+        "received_at": "2026-10-27T03:31:12.48Z",
+        "duration_seconds": 4.2,
+        "atc_channel_id": 812,
+        "facility_ids": ["ae40254d-1aeb-4a43-93b5-82d7e61d1202"],
+        "is_controller_speaking": false,
+        "callsigns": ["UAL254"],
+        "transcript": "Mayday, mayday, mayday, United 254, engine failure, request Denver",
+        "word_timestamps": []
+      }
+    ],
+    "swim_records": [
+      {
+        "source_tool": "diversions",
+        "source_record_id": 88213,
+        "record": {"source_record_id": 88213, "callsign": "UAL254", "departure_airport_id": 3702, "original_destination_airport_id": 3618, "diversion_airport_id": 3505, "diversion_indicator": "DV", "source_timestamp": "2026-10-27T03:40:02Z"}
+      }
+    ],
+    "adsb_positions": [],
+    "web_pages": []
+  },
+  "records_reviewed": {"transmissions": 412, "adsb_positions": 0, "swim_records": 6, "total": 418},
+  "record_limit": 5000,
+  "is_record_limit_reached": false,
+  "records_charged": 418
+}
+```
+
+</ResponseExample>

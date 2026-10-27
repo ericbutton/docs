@@ -1,0 +1,62 @@
+---
+title: "Get event"
+description: "Returns one event that happened on frequency, with all its updates."
+api: "GET /api/v0/events/{event_id}"
+---
+
+Returns one event and all its updates, in the same shape as an entry of [Search events](/api-reference/events/search), without `similarity_score`.
+
+## Path parameters
+
+<ParamField path="event_id" type="integer" required>
+  An event's `event_id`. An `event_update_id` returns `404`.
+</ParamField>
+
+## Response
+
+<ResponseField name="event_id" type="integer">
+  Id of the event as first reported.
+</ResponseField>
+
+<ResponseField name="atc_channel_id" type="integer">
+  The channel the event happened on.
+</ResponseField>
+
+<ResponseField name="facility_ids" type="string[]">
+  Facilities that channel belongs to.
+</ResponseField>
+
+<ResponseField name="happened_at" type="string">
+  When the event happened, as first reported, in UTC, accurate to within 20 seconds.
+</ResponseField>
+
+<ResponseField name="summary" type="string">
+  One-line summary as first reported.
+</ResponseField>
+
+<ResponseField name="callsigns" type="string[]">
+  ICAO callsigns of the flights involved, as first reported.
+</ResponseField>
+
+<ResponseField name="evidence_audio_sample_ids" type="string[]">
+  Transmissions the event was first found in.
+</ResponseField>
+
+<ResponseField name="updates" type="array">
+  Every later update of the event, oldest first, with `event_update_id`, `update_to_event_id`, `happened_at`, `summary`, `callsigns`, and `evidence_audio_sample_ids`. See [Search events](/api-reference/events/search).
+</ResponseField>
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | `event_id` is not a positive integer. |
+| `404` | No event with that id is available to the API. |
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" "https://api.enhancedradar.com/api/v0/events/5176678"
+```
+
+</RequestExample>

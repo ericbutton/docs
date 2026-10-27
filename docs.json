@@ -17,36 +17,26 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get started",
             "pages": [
               "index",
               "quickstart",
-              "development",
-              "claude-connection-test"
+              "authentication"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/facilities-and-channels",
+              "concepts/selecting-data",
+              "concepts/times",
+              "concepts/errors"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Guides",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/live-updates"
             ]
           }
         ]
@@ -55,38 +45,74 @@
         "tab": "API reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction",
-              "codex-demo"
+              "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Coverage",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/facilities/list",
+              "api-reference/facilities/search",
+              "api-reference/airlines/list"
+            ]
+          },
+          {
+            "group": "Transcripts",
+            "pages": [
+              "api-reference/transcripts/list",
+              "api-reference/transcripts/get",
+              "api-reference/transcripts/audio"
+            ]
+          },
+          {
+            "group": "Events",
+            "pages": [
+              "api-reference/events/search",
+              "api-reference/events/get"
+            ]
+          },
+          {
+            "group": "Status",
+            "pages": [
+              "api-reference/flights/status",
+              "api-reference/airports/status"
+            ]
+          },
+          {
+            "group": "PIREPs",
+            "pages": [
+              "api-reference/pireps/search"
+            ]
+          },
+          {
+            "group": "Answers",
+            "pages": [
+              "api-reference/answers/create"
+            ]
+          },
+          {
+            "group": "Live WebSocket",
+            "pages": [
+              "api-reference/live/connect",
+              "api-reference/live/transcripts",
+              "api-reference/live/events",
+              "api-reference/live/flight-status",
+              "api-reference/live/airport-status",
+              "api-reference/live/pireps"
+            ]
+          },
+          {
+            "group": "Utility",
+            "pages": [
+              "api-reference/health",
+              "api-reference/docs"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "/images/api-dark.svg",
@@ -117,5 +143,13 @@
      "cursor",
      "vscode"
    ]
+  },
+  "api": {
+    "mdx": {
+      "auth": {
+        "method": "bearer"
+      },
+      "server": "https://api.enhancedradar.com"
+    }
   }
 }

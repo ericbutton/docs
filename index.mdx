@@ -1,97 +1,69 @@
 ---
 title: "Introduction"
-description: "Welcome to the new home for your documentation"
+description: "US air traffic control radio data: transcripts of ATC transmissions and the facilities and channels they come from."
 ---
 
-## Setting up
+The Enhanced Radar API gives you US air traffic control radio data: transcripts of ATC transmissions, the facilities and channels they come from, and what we derive from them, such as events, flight and airport statuses, and pilot weather reports.
 
-Get your documentation site up and running in minutes.
+Every route is under `https://api.enhancedradar.com`. All paths are under `/api/v0` except `/health`.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
+<Card title="Quickstart" icon="rocket" horizontal href="/quickstart">
+  Make your first request and fetch a transcript and its audio.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## What you can get
 
 <Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+  <Card title="Transcripts" icon="file-lines" href="/api-reference/transcripts/list">
+    Every transmission from a controller or pilot, with callsigns, word timings, and audio.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+
+  <Card title="Events" icon="triangle-exclamation" href="/api-reference/events/search">
+    Notable things that happened on frequency, such as go-arounds, laser strikes, diversions, and gate returns.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+
+  <Card title="Flight status" icon="plane" href="/api-reference/flights/status">
+    The latest substantive ATC communication with one flight, in one sentence.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+
+  <Card title="Airport status" icon="tower-control" href="/api-reference/airports/status">
+    Runways, flow, traffic programs, weather, and what was heard on frequency at one airport.
+  </Card>
+
+  <Card title="PIREPs" icon="cloud-bolt" href="/api-reference/pireps/search">
+    Pilot weather reports heard on frequency near a point, in plain language and FAA format.
+  </Card>
+
+  <Card title="Answers" icon="comments" href="/api-reference/answers/create">
+    Ask a question and get an answer researched from transcripts, ADS-B, FAA SWIM, weather, and the web.
   </Card>
 </Columns>
 
-## Create beautiful pages
+## Pull or stream
 
-Everything you need to create world-class documentation.
+- **Pull:** REST endpoints return records over a time window of up to 48 hours. See [Selecting data](/concepts/selecting-data).
+- **Stream:** one WebSocket at `GET /api/v0/live` streams transcripts, events, flight statuses, airport statuses, and PIREPs as they happen. See [Live updates](/guides/live-updates).
+
+## Learn the basics
 
 <Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+  <Card title="Authentication" icon="key" href="/authentication">
+    Send an API key as a bearer token.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+
+  <Card title="Facilities and channels" icon="tower-broadcast" href="/concepts/facilities-and-channels">
+    How coverage is organized and which channels return data.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+
+  <Card title="Times" icon="clock" href="/concepts/times">
+    Time formats, precision, and ordering.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+
+  <Card title="Errors" icon="circle-exclamation" href="/concepts/errors">
+    Error format and status codes.
   </Card>
 </Columns>
 
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Tip>
+  This reference is also served as Markdown by [`GET /api/v0/docs`](/api-reference/docs).
+</Tip>

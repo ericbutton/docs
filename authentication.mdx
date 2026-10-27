@@ -1,0 +1,44 @@
+---
+title: "Authentication"
+description: "Authenticate Enhanced Radar API requests with an API key sent as a bearer token."
+---
+
+Send an API key as a bearer token in the `Authorization` header:
+
+```http
+Authorization: Bearer sk_...
+```
+
+```bash
+curl -H "Authorization: Bearer $ER_API_KEY" "https://api.enhancedradar.com/api/v0/facilities"
+```
+
+## API keys
+
+- Keys are issued by Enhanced Radar through WorkOS.
+- A key is shown once, when it is created. Store it as a secret.
+- Never embed a key in browser or mobile client code.
+- Revoked keys stop working within 60 seconds.
+
+## Permissions
+
+Every route requires the `api:read` permission, with two exceptions:
+
+| Route | Accepted permissions |
+| --- | --- |
+| `GET /health` | None. The route is public. |
+| `GET /api/v0/facilities/search` | `api:read` or `api:onboarding` |
+
+## WebSocket connections
+
+For [`GET /api/v0/live`](/api-reference/live/connect), send the key on the WebSocket upgrade request. The key is checked once, when the connection opens.
+
+## Authentication errors
+
+| Status | Meaning |
+| --- | --- |
+| `401` | The `Authorization` header is missing, or the key is invalid, revoked, or expired. Body `{"data": null, "error": "unauthorized"}`. |
+| `403` | The key lacks the permission the route requires. Body `{"data": null, "error": "forbidden"}`. |
+| `503` | The key could not be validated because the authentication provider is unavailable. Retry later. |
+
+See [Errors](/concepts/errors) for all status codes.

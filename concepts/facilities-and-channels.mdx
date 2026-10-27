@@ -1,0 +1,28 @@
+---
+title: "Facilities and channels"
+description: "How Enhanced Radar organizes ATC coverage into facilities, channel categories, and channels, and which channels return data."
+---
+
+Coverage is organized in three levels:
+
+- **Facility:** an airport, a TRACON, or an en-route center. Identified by `facility_id`.
+- **Channel category:** a group of channels within a facility, such as `Ground`, `Approach`, or `Low`.
+- **Channel:** one radio frequency. Identified by `atc_channel_id`.
+
+A channel can belong to more than one facility, for example a center sector that also serves an airport. It can also belong to more than one category of a facility, for example a channel used for both `Approach` and `Departure`. That is why transcripts and events carry a list of `facility_ids`.
+
+Use [`GET /api/v0/facilities`](/api-reference/facilities/list) to list the facilities we cover with their categories and channels, and [`GET /api/v0/facilities/search`](/api-reference/facilities/search) to find any facility by code or name.
+
+## Available channels
+
+Data is returned only for channels marked `is_available` in `GET /api/v0/facilities`. Channels with `is_available` set to `false` are listed so you can see our coverage, but no data is returned for them.
+
+<Note>
+  ATIS channels are listed with `is_available` set to `false`. ATIS broadcasts are not available through the API.
+</Note>
+
+To ask for a channel to be turned on, email [support@enhancedradar.com](mailto:support@enhancedradar.com) with its `atc_channel_id`.
+
+## Airlines
+
+[`GET /api/v0/airlines`](/api-reference/airlines/list) lists the airlines you can filter by with `airline_id`. A flight belongs to an airline when its callsign starts with the airline's three-letter ICAO designator.

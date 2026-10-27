@@ -1,0 +1,151 @@
+---
+title: "Search PIREPs"
+description: "Searches pilot weather reports heard on frequency near a point, in plain language and FAA PIREP format."
+api: "GET /api/v0/pireps"
+---
+
+Searches pilot weather reports (PIREPs) heard on frequency near a point: a pilot reporting turbulence, icing, wind shear, cloud layers, or other conditions they encountered. A controller passing an earlier report on to other aircraft is not a new PIREP. Describe what you are looking for in plain words; results are ranked by how closely they match its meaning, not by exact words.
+
+Each PIREP is returned as it was first reported, with its plain-language summary and the conditions encoded in the FAA PIREP format.
+
+## Query parameters
+
+<ParamField query="q" type="string" required>
+  What you are looking for, e.g. `turbulence`, `icing on descent`, or `wind shear on final`.
+</ParamField>
+
+<ParamField query="since" type="string" required>
+  Start of the window, inclusive. See [Times](/concepts/times).
+</ParamField>
+
+<ParamField query="until" type="string" required>
+  End of the window, exclusive. Must be after `since` and at most 6 hours later.
+</ParamField>
+
+<ParamField query="latitude" type="number" required>
+  Latitude of the center of the search area, in decimal degrees.
+</ParamField>
+
+<ParamField query="longitude" type="number" required>
+  Longitude of the center of the search area, in decimal degrees.
+</ParamField>
+
+<ParamField query="radius_nm" type="number" required>
+  Radius of the search area in nautical miles, 1 to 150. A PIREP is in the area when the reporting aircraft was.
+</ParamField>
+
+<ParamField query="limit" default="10" type="integer">
+  Maximum PIREPs to return, 1 to 25.
+</ParamField>
+
+Results are the best matches in one page; there is no cursor. Weak matches are left out, so a search for conditions nobody reported returns no PIREPs. A PIREP is returned only when the reporting aircraft's position is known. A page can hold fewer than `limit` PIREPs even when more match. A PIREP can take a few minutes after it is heard to become searchable.
+
+## Response
+
+<ResponseField name="pireps" type="array">
+  The PIREPs, best match first.
+
+  <Expandable title="PIREP">
+    <ResponseField name="event_id" type="integer">
+      Id of the event the PIREP was reported in. Fetch it with [Get event](/api-reference/events/get).
+    </ResponseField>
+
+    <ResponseField name="atc_channel_id" type="integer">
+      The channel the PIREP was heard on.
+    </ResponseField>
+
+    <ResponseField name="facility_ids" type="string[]">
+      Facilities that channel belongs to.
+    </ResponseField>
+
+    <ResponseField name="happened_at" type="string">
+      When the PIREP was made, in UTC, accurate to within 20 seconds.
+    </ResponseField>
+
+    <ResponseField name="callsign" type="string">
+      ICAO callsign of the reporting aircraft.
+    </ResponseField>
+
+    <ResponseField name="aircraft_latitude" type="number">
+      Latitude of the reporting aircraft from ADS-B when it reported, in decimal degrees.
+    </ResponseField>
+
+    <ResponseField name="aircraft_longitude" type="number">
+      Longitude of the reporting aircraft from ADS-B when it reported, in decimal degrees.
+    </ResponseField>
+
+    <ResponseField name="summary" type="string">
+      One-line plain-language summary of the conditions the pilot reported, with the pilot's words from the frequency.
+    </ResponseField>
+
+    <ResponseField name="faa_pirep" type="string">
+      The report in the FAA PIREP format of FAA Order JO 7110.10, starting with `UUA` for an urgent report or `UA` for a routine one. See [FAA PIREP format](#faa-pirep-format).
+    </ResponseField>
+
+    <ResponseField name="evidence_audio_sample_ids" type="string[]">
+      Transmissions the PIREP was heard in. Fetch them with [Get transcript](/api-reference/transcripts/get) and [Get transcript audio](/api-reference/transcripts/audio).
+    </ResponseField>
+
+    <ResponseField name="search_score" type="number">
+      Relevance of the match; higher is better. Compare scores only within one response.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## FAA PIREP format
+
+`faa_pirep` holds these text elements, in this order, each only when known:
+
+| Element | Source |
+| --- | --- |
+| `UUA` or `UA` | Urgent when the report includes a tornado, funnel cloud, or waterspout, severe or extreme turbulence, severe icing, hail, low-level wind shear, or volcanic ash. |
+| `/TM` | `happened_at` as `HHMM` UTC. |
+| `/FL` | The aircraft's barometric altitude from ADS-B in hundreds of feet, or `UNKN`. |
+| `/TP` | Always `UNKN`; the aircraft type is not known. |
+| `/SK`, `/WX`, `/TA`, `/WV`, `/TB`, `/IC`, `/RM` | Sky condition, flight visibility and weather, air temperature, wind, turbulence, icing, and remarks, as the pilot stated them. |
+
+There is no `/OV` location element; use `aircraft_latitude` and `aircraft_longitude`.
+
+<Warning>
+  The condition elements are written by a language model from transcripts and can contain mistakes. Check important details against the transcripts.
+</Warning>
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | A required parameter is missing, or a parameter is invalid. |
+| `504` | The search took too long. Try again. |
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/pireps?q=turbulence&since=2026-10-22T18:00:00Z&until=2026-10-23T00:00:00Z&latitude=37.62&longitude=-122.38&radius_nm=60"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "pireps": [
+    {
+      "event_id": 5180144,
+      "atc_channel_id": 820,
+      "facility_ids": ["ae40254d-1aeb-4a43-93b5-82d7e61d1202"],
+      "happened_at": "2026-10-22T22:14:05.120934Z",
+      "callsign": "SWA2214",
+      "aircraft_latitude": 37.7412,
+      "aircraft_longitude": -122.7031,
+      "summary": "Moderate chop reported descending through 9,000, \"moderate chop from about ten down to eight\"",
+      "faa_pirep": "UA /TM 2214 /FL090 /TP UNKN /TB MOD CHOP 080-100 /RM DURD",
+      "evidence_audio_sample_ids": ["7d4c2f1e-93a8-4f0b-b6e2-5a1c9d3e8f70"],
+      "search_score": 0.68
+    }
+  ]
+}
+```
+
+</ResponseExample>

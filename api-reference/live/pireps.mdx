@@ -1,0 +1,55 @@
+---
+title: "PIREPs topic"
+sidebarTitle: "pireps"
+description: "Stream each new pilot weather report that matches a search area and query over the live WebSocket."
+---
+
+Streams each new PIREP that matches a search, as soon as it is stored. It takes the same search as [Search PIREPs](/api-reference/pireps/search) and applies it to each new PIREP: the reporting aircraft must be inside the search area, and the report must match `q` the same way a search result does. See [Connect](/api-reference/live/connect) for the message format.
+
+## Parameters
+
+<ParamField body="q" type="string" required>
+  What you are looking for, e.g. `turbulence`, `icing on descent`, or `wind shear on final`.
+</ParamField>
+
+<ParamField body="latitude" type="number" required>
+  Latitude of the center of the search area, in decimal degrees.
+</ParamField>
+
+<ParamField body="longitude" type="number" required>
+  Longitude of the center of the search area, in decimal degrees.
+</ParamField>
+
+<ParamField body="radius_nm" type="number" required>
+  Radius of the search area in nautical miles, 1 to 150. A PIREP is in the area when the reporting aircraft was.
+</ParamField>
+
+```json
+{"action": "subscribe", "subscription_topic": "pireps", "params": {"q": "turbulence", "latitude": 37.62, "longitude": -122.38, "radius_nm": 60}}
+```
+
+## Updates
+
+Each update's `data` has the same fields as one entry of `pireps` in [Search PIREPs](/api-reference/pireps/search). `search_score` is the match's relevance to `q`.
+
+```json
+{
+  "event_id": 5180144,
+  "atc_channel_id": 820,
+  "facility_ids": ["ae40254d-1aeb-4a43-93b5-82d7e61d1202"],
+  "happened_at": "2026-10-22T22:14:05.120934Z",
+  "callsign": "SWA2214",
+  "aircraft_latitude": 37.7412,
+  "aircraft_longitude": -122.7031,
+  "summary": "Moderate chop reported descending through 9,000, \"moderate chop from about ten down to eight\"",
+  "faa_pirep": "UA /TM 2214 /FL090 /TP UNKN /TB MOD CHOP 080-100 /RM DURD",
+  "evidence_audio_sample_ids": ["7d4c2f1e-93a8-4f0b-b6e2-5a1c9d3e8f70"],
+  "search_score": 0.68
+}
+```
+
+Use [Search PIREPs](/api-reference/pireps/search) for reports stored before the subscription started. A PIREP is usually stored a few minutes after it is heard, so updates arrive in the order PIREPs are stored, not the order they happened; use `happened_at` to order them.
+
+## Refusals
+
+The subscription is refused when a required parameter is missing or a parameter is invalid, or when the search could not be prepared; retry later.

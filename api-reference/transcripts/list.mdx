@@ -1,0 +1,149 @@
+---
+title: "List transcripts"
+description: "Returns transcripts of ATC transmissions in a time window, newest first, or the transmissions that best match a full-text search."
+api: "GET /api/v0/transcripts"
+---
+
+Returns transcripts of ATC transmissions in a time window. Each transcript covers one transmission, from either the controller or a pilot. Without `q` it lists transmissions newest first, one page at a time. With `q` it returns the transmissions whose words best match the search text.
+
+## Query parameters
+
+Takes `since`, `until`, `callsign`, `facility_id`, `atc_channel_ids`, and `airline_id` as described in [Selecting data](/concepts/selecting-data), plus `q`, `match`, `limit`, and `cursor`.
+
+<ParamField query="since" type="string" required>
+  Start of the window, inclusive. RFC 3339.
+</ParamField>
+
+<ParamField query="until" type="string" required>
+  End of the window, exclusive. Must be after `since` and at most 48 hours later.
+</ParamField>
+
+<ParamField query="callsign" type="string">
+  ICAO callsign, e.g. `UAL406`. Case-insensitive. A callsign we have never heard returns an empty list. Cannot be combined with `q`.
+</ParamField>
+
+<ParamField query="facility_id" type="string">
+  A `facility_id` from `GET /api/v0/facilities`. Selects transcripts from that facility's available channels.
+</ParamField>
+
+<ParamField query="atc_channel_ids" type="string">
+  Comma-separated `atc_channel_id` values, e.g. `4,7,8`. Every channel must have `is_available` set. With `facility_id`, only channels that are in the list and in the facility are used.
+</ParamField>
+
+<ParamField query="airline_id" type="integer">
+  An `airline_id` from `GET /api/v0/airlines`. Selects transcripts attributed to that airline's flights, matched by the callsign's ICAO prefix. Cannot be combined with `q`.
+</ParamField>
+
+<ParamField query="q" type="string">
+  Words to search for in the transcripts. Cannot be combined with `callsign` or `airline_id`; it can be combined with `facility_id` and `atc_channel_ids`.
+</ParamField>
+
+<ParamField query="match" default="all_words" type="string">
+  How `q` matches: `all_words` requires every word, `phrase` requires the words in order, `any_words` requires at least one. Requires `q`.
+</ParamField>
+
+<ParamField query="limit" default="100" type="integer">
+  Maximum transcripts to return. Without `q`: 1 to 500. With `q`: 1 to 100.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  The `next_cursor` from the previous page. Use it with the same `since`, `until`, and filters. Cannot be combined with `q`.
+</ParamField>
+
+A `facility_id` or `atc_channel_ids` entry that is not in `GET /api/v0/facilities`, a channel that is not available, or an `airline_id` that is not in `GET /api/v0/airlines` returns `400`.
+
+## Response
+
+<ResponseField name="transcripts" type="array">
+  The transcripts. Newest first without `q`; best match first with `q`.
+
+  <Expandable title="transcript">
+    <ResponseField name="audio_sample_id" type="string">
+      Unique id of the transmission, a UUID.
+    </ResponseField>
+
+    <ResponseField name="received_at" type="string">
+      When the transmission ended, in UTC, accurate to within 20 seconds. See [Times](/concepts/times).
+    </ResponseField>
+
+    <ResponseField name="duration_seconds" type="number">
+      Length of the transmission in seconds.
+    </ResponseField>
+
+    <ResponseField name="atc_channel_id" type="integer">
+      The channel the transmission was received on. See [List facilities](/api-reference/facilities/list).
+    </ResponseField>
+
+    <ResponseField name="facility_ids" type="string[]">
+      Facilities that channel belongs to.
+    </ResponseField>
+
+    <ResponseField name="is_controller_speaking" type="boolean">
+      `true` when the controller is speaking, `false` when a pilot is.
+    </ResponseField>
+
+    <ResponseField name="callsigns" type="string[]">
+      ICAO callsigns of the flights the transmission was attributed to, e.g. `UAL406`. Empty when no flight could be attributed; a transmission can name more than one flight.
+    </ResponseField>
+
+    <ResponseField name="transcript" type="string">
+      Transcript formatted for reading. When formatting is not available it falls back to the transcript as spoken, in lower case.
+    </ResponseField>
+
+    <ResponseField name="word_timestamps" type="array">
+      Timing of each word of `transcript`, as `{word, start_seconds, end_seconds}` in seconds from the start of the audio. Words are lower case and keep their punctuation, e.g. `776,`. Empty when timing is not available.
+    </ResponseField>
+
+    <ResponseField name="search_score" type="number">
+      Only with `q`. Relevance of the match; higher is better. Compare scores only within one response.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="next_cursor" type="string | null">
+  Pass as `cursor` to get the next page. `null` when there are no more transcripts in the window, and always `null` with `q`.
+</ResponseField>
+
+## Pagination
+
+With `callsign` or `airline_id`, a transmission attributed to more than one matching flight is returned once. Because of that, a page can hold fewer than `limit` transcripts even when more follow. Keep requesting pages until `next_cursor` is `null`.
+
+<RequestExample>
+
+```bash By callsign
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/transcripts?since=2026-10-22T20:00:00Z&until=2026-10-22T22:00:00Z&callsign=VJA776"
+```
+
+```bash Phrase search
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/transcripts?since=2026-10-21T00:00:00Z&until=2026-10-23T00:00:00Z&facility_id=3667d976-1566-4887-ae34-c024d92f46c7&q=go+around&match=phrase"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "transcripts": [
+    {
+      "audio_sample_id": "29e13bdf-08fa-4e44-87a5-ed81a17919a7",
+      "received_at": "2026-10-22T22:40:50.311224173Z",
+      "duration_seconds": 4.871125,
+      "atc_channel_id": 4,
+      "facility_ids": ["3667d976-1566-4887-ae34-c024d92f46c7"],
+      "is_controller_speaking": true,
+      "callsigns": ["VJA776"],
+      "transcript": "Iconic 776, uh San Francisco Tower, runway 28R at E cleared for takeoff",
+      "word_timestamps": [
+        {"word": "iconic", "start_seconds": 0.08, "end_seconds": 0.4},
+        {"word": "776,", "start_seconds": 0.46, "end_seconds": 1.34}
+      ]
+    }
+  ],
+  "next_cursor": "yPEhq1Z_FpbEBP0iNSreEf-IOurzKooaMq_8KjPn..."
+}
+```
+
+</ResponseExample>

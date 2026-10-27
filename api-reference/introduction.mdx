@@ -1,33 +1,51 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API reference"
+sidebarTitle: "Introduction"
+description: "Base URL, authentication, and every route in the Enhanced Radar API."
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
+```text
+https://api.enhancedradar.com
+```
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+All paths are under `/api/v0` except `/health`.
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+Send an API key as a bearer token. Every route requires the `api:read` permission, except `GET /health`, which is public, and `GET /api/v0/facilities/search`, which also accepts `api:onboarding`. See [Authentication](/authentication).
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```http
+Authorization: Bearer sk_...
 ```
+
+## Routes
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | [`/health`](/api-reference/health) | Liveness check. Public. |
+| `GET` | [`/api/v0/docs`](/api-reference/docs) | This reference as Markdown. |
+| `GET` | [`/api/v0/facilities`](/api-reference/facilities/list) | Facilities we cover and their channels. |
+| `GET` | [`/api/v0/facilities/search`](/api-reference/facilities/search) | Airports, TRACONs, and centers that best match a code or name. |
+| `GET` | [`/api/v0/airlines`](/api-reference/airlines/list) | Airlines that `airline_id` accepts. |
+| `GET` | [`/api/v0/transcripts`](/api-reference/transcripts/list) | Transcripts of ATC transmissions, newest first, or a full-text search. |
+| `GET` | [`/api/v0/transcripts/{audio_sample_id}`](/api-reference/transcripts/get) | One transcript by id. |
+| `GET` | [`/api/v0/transcripts/{audio_sample_id}/audio`](/api-reference/transcripts/audio) | Short-lived link to one transmission's audio. |
+| `GET` | [`/api/v0/events`](/api-reference/events/search) | Search for events: notable things that happened on frequency. |
+| `GET` | [`/api/v0/events/{event_id}`](/api-reference/events/get) | One event with all its updates. |
+| `GET` | [`/api/v0/flights/status`](/api-reference/flights/status) | The latest status of one flight at a given time. |
+| `GET` | [`/api/v0/airports/status`](/api-reference/airports/status) | What is going on at one airport right now: runways, flow, traffic programs, and what was heard on frequency. |
+| `GET` | [`/api/v0/pireps`](/api-reference/pireps/search) | Search pilot weather reports made near a point. |
+| `POST` | [`/api/v0/answers`](/api-reference/answers/create) | Answer a question from radio transcripts, ADS-B, FAA SWIM records, weather, and the web, with the evidence behind it. |
+| `GET` | [`/api/v0/live`](/api-reference/live/connect) | WebSocket that streams live transcripts, events, flight statuses, airport statuses, and PIREPs. |
+
+## Conventions
+
+- [Selecting data](/concepts/selecting-data): `since`, `until`, and filters shared by pull endpoints.
+- [Times](/concepts/times): RFC 3339, UTC, and `received_at` precision.
+- [Errors](/concepts/errors): error format and status codes.
+
+<Warning>
+  Statuses, events, observations, PIREP conditions, and answers are written by a language model from transcripts and can contain mistakes. Check important details against the transcripts and evidence.
+</Warning>

@@ -1,0 +1,31 @@
+---
+title: "Selecting data"
+description: "Query parameters shared by Enhanced Radar pull endpoints: time windows and filters by callsign, facility, channel, and airline."
+---
+
+Pull endpoints that return records over time share these query parameters. `since` and `until` are required; the filters are optional and can be combined.
+
+| Name | Required | Description |
+| --- | --- | --- |
+| `since` | yes | Start of the window, inclusive. |
+| `until` | yes | End of the window, exclusive. Must be after `since` and at most 48 hours later. |
+| `callsign` | no | ICAO callsign, e.g. `UAL406`. Case-insensitive. |
+| `facility_id` | no | A `facility_id` from `GET /api/v0/facilities`. Selects records from that facility's available channels. |
+| `atc_channel_ids` | no | Comma-separated `atc_channel_id` values from `GET /api/v0/facilities`, e.g. `4,7,8`. Selects records from those channels. Every channel must have `is_available` set; otherwise the request returns `400`. With `facility_id`, only channels that are in the list and in the facility are used. |
+| `airline_id` | no | An `airline_id` from `GET /api/v0/airlines`. Selects records attributed to that airline's flights, matched by the callsign's ICAO prefix. |
+
+These parameters apply to:
+
+- [`GET /api/v0/transcripts`](/api-reference/transcripts/list)
+- [`GET /api/v0/events`](/api-reference/events/search)
+
+`since` and `until` select by `received_at` as the API returns it. See [Times](/concepts/times).
+
+## Exceptions
+
+- [`GET /api/v0/pireps`](/api-reference/pireps/search) selects by area instead, and its window is at most 6 hours.
+- Live subscriptions on [`GET /api/v0/live`](/api-reference/live/connect) take their own parameters, listed for each topic.
+
+## Coverage
+
+Data is returned only for channels marked `is_available` in `GET /api/v0/facilities`. See [Facilities and channels](/concepts/facilities-and-channels).

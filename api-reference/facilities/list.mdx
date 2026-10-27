@@ -1,0 +1,110 @@
+---
+title: "List facilities"
+description: "Lists the ATC facilities Enhanced Radar receives, with their channel categories and channels."
+api: "GET /api/v0/facilities"
+---
+
+Lists the ATC facilities we receive. Each facility lists its channel categories, such as `Ground` or `Approach`, and each category lists its channels. A facility is an airport, a TRACON, or an en-route center.
+
+A channel can belong to more than one facility, for example a center sector that also serves an airport, and to more than one category of a facility, for example a channel used for both `Approach` and `Departure`. See [Facilities and channels](/concepts/facilities-and-channels).
+
+Facilities are ordered by `facility_code`.
+
+## Response
+
+<ResponseField name="facilities" type="array">
+  The facilities.
+
+  <Expandable title="facility">
+    <ResponseField name="facility_id" type="string">
+      Unique id of the facility. Pass it as `facility_id`.
+    </ResponseField>
+
+    <ResponseField name="facility_type" type="string">
+      `airport`, `tracon`, or `center`.
+    </ResponseField>
+
+    <ResponseField name="facility_code" type="string">
+      Airport display code such as `SFO`, or the TRACON or center code such as `N90` or `ZAU`.
+    </ResponseField>
+
+    <ResponseField name="facility_name" type="string">
+      Name of the facility.
+    </ResponseField>
+
+    <ResponseField name="channel_categories" type="array">
+      The facility's channel categories, in the facility's display order.
+
+      <Expandable title="channel category">
+        <ResponseField name="channel_category_id" type="integer">
+          Unique id of the category.
+        </ResponseField>
+
+        <ResponseField name="channel_category_name" type="string">
+          Name of the category, e.g. `Ground`, `Approach`, or `Low`.
+        </ResponseField>
+
+        <ResponseField name="atc_channels" type="array">
+          The category's channels, ordered by frequency.
+
+          <Expandable title="channel">
+            <ResponseField name="atc_channel_id" type="integer">
+              Unique id of the channel. Transcripts carry it as `atc_channel_id`.
+            </ResponseField>
+
+            <ResponseField name="channel_name" type="string">
+              Name of the channel, e.g. `Ramp West` or `28R`.
+            </ResponseField>
+
+            <ResponseField name="channel_frequency_mhz" type="number">
+              Radio frequency in MHz.
+            </ResponseField>
+
+            <ResponseField name="is_available" type="boolean">
+              `true` when the API serves this channel's data. Channels with `false` are listed so you can see our coverage, but no transcripts are returned for them. Email [support@enhancedradar.com](mailto:support@enhancedradar.com) with the `atc_channel_id` to ask for a channel to be turned on.
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" "https://api.enhancedradar.com/api/v0/facilities"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "facilities": [
+    {
+      "facility_id": "3667d976-1566-4887-ae34-c024d92f46c7",
+      "facility_type": "airport",
+      "facility_code": "SFO",
+      "facility_name": "San Francisco",
+      "channel_categories": [
+        {
+          "channel_category_id": 523,
+          "channel_category_name": "Ramp",
+          "atc_channels": [
+            {
+              "atc_channel_id": 358,
+              "channel_name": "Ramp West",
+              "channel_frequency_mhz": 119.225,
+              "is_available": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,88 @@
+---
+title: "Get transcript"
+description: "Returns one transcript of an ATC transmission by its audio_sample_id."
+api: "GET /api/v0/transcripts/{audio_sample_id}"
+---
+
+Returns one transcript by its `audio_sample_id`, in the same shape as an entry of [List transcripts](/api-reference/transcripts/list), without `search_score`.
+
+## Path parameters
+
+<ParamField path="audio_sample_id" type="string" required>
+  Unique id of the transmission, a UUID.
+</ParamField>
+
+## Response
+
+<ResponseField name="audio_sample_id" type="string">
+  Unique id of the transmission, a UUID.
+</ResponseField>
+
+<ResponseField name="received_at" type="string">
+  When the transmission ended, in UTC, accurate to within 20 seconds. See [Times](/concepts/times).
+</ResponseField>
+
+<ResponseField name="duration_seconds" type="number">
+  Length of the transmission in seconds.
+</ResponseField>
+
+<ResponseField name="atc_channel_id" type="integer">
+  The channel the transmission was received on.
+</ResponseField>
+
+<ResponseField name="facility_ids" type="string[]">
+  Facilities that channel belongs to.
+</ResponseField>
+
+<ResponseField name="is_controller_speaking" type="boolean">
+  `true` when the controller is speaking, `false` when a pilot is.
+</ResponseField>
+
+<ResponseField name="callsigns" type="string[]">
+  ICAO callsigns of the flights the transmission was attributed to. Empty when no flight could be attributed.
+</ResponseField>
+
+<ResponseField name="transcript" type="string">
+  Transcript formatted for reading. When formatting is not available it falls back to the transcript as spoken, in lower case.
+</ResponseField>
+
+<ResponseField name="word_timestamps" type="array">
+  Timing of each word of `transcript`, as `{word, start_seconds, end_seconds}`. Empty when timing is not available.
+</ResponseField>
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | `audio_sample_id` is not a UUID. |
+| `404` | No transcript with that id is available to the API. |
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/transcripts/29e13bdf-08fa-4e44-87a5-ed81a17919a7"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "audio_sample_id": "29e13bdf-08fa-4e44-87a5-ed81a17919a7",
+  "received_at": "2026-10-22T22:40:50.311224173Z",
+  "duration_seconds": 4.871125,
+  "atc_channel_id": 4,
+  "facility_ids": ["3667d976-1566-4887-ae34-c024d92f46c7"],
+  "is_controller_speaking": true,
+  "callsigns": ["VJA776"],
+  "transcript": "Iconic 776, uh San Francisco Tower, runway 28R at E cleared for takeoff",
+  "word_timestamps": [
+    {"word": "iconic", "start_seconds": 0.08, "end_seconds": 0.4},
+    {"word": "776,", "start_seconds": 0.46, "end_seconds": 1.34}
+  ]
+}
+```
+
+</ResponseExample>

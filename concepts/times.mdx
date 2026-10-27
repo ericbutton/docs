@@ -1,0 +1,18 @@
+---
+title: "Times"
+description: "Time formats, precision, and ordering in the Enhanced Radar API."
+---
+
+- Times are RFC 3339.
+- Responses are in UTC.
+- `since`, `until`, and `at` accept any offset, e.g. `2026-10-22T14:00:00Z` or `2026-10-22T07:00:00-07:00`.
+
+## Precision and ordering of `received_at`
+
+A transmission's `received_at` is when the transmission ended.
+
+- It is accurate to within 20 seconds.
+- The order of transmissions by `received_at` is exact.
+- A transmission always has the same `received_at` in every response.
+
+`since` and `until` select by `received_at` as the API returns it. Times derived from transmissions, such as an event's `happened_at` or a flight's `status_at`, have the same 20-second accuracy.

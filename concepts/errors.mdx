@@ -1,0 +1,28 @@
+---
+title: "Errors"
+description: "Error response format and HTTP status codes returned by the Enhanced Radar API."
+---
+
+Error responses are JSON:
+
+```json
+{"data": null, "error": "<message>"}
+```
+
+Read `error` for the reason. Every response carries an `X-Request-ID` header; include it when you report a problem to [support@enhancedradar.com](mailto:support@enhancedradar.com).
+
+## Status codes
+
+| Status | Meaning |
+| --- | --- |
+| `400` | A parameter is missing or invalid. `error` says which. |
+| `401` | The `Authorization` header is missing, or the key is invalid, revoked, or expired. Body `{"data": null, "error": "unauthorized"}`. |
+| `403` | The key lacks the permission the route requires. Body `{"data": null, "error": "forbidden"}`. |
+| `500` | The request failed on our side. Retry later. |
+| `503` | The key could not be validated because the authentication provider is unavailable. Retry later. |
+
+Some routes return additional codes, such as `404` for an unknown id, `402` and `502` on [`POST /api/v0/answers`](/api-reference/answers/create), and `504` on [`GET /api/v0/pireps`](/api-reference/pireps/search). Each endpoint page lists them.
+
+## WebSocket errors
+
+On [`GET /api/v0/live`](/api-reference/live/connect), the upgrade request returns `401` or `403` as above. After the connection opens, problems are reported as `error` messages and the connection stays open.

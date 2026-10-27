@@ -1,0 +1,171 @@
+---
+title: "Search events"
+description: "Searches notable things that happened on frequency, such as go-arounds, laser strikes, diversions, and gate returns, ranked by meaning."
+api: "GET /api/v0/events"
+---
+
+Searches events: notable things that happened on frequency, such as a go-around, a laser strike, a diversion, or a gate return, each summarized and linked to the transmissions it was found in. Describe what you are looking for in plain words; results are ranked by how closely they match its meaning, not by exact words.
+
+An event is reported once and then updated as more transmissions about it arrive. Each event is returned as it was first reported, with all its updates nested under it in `updates`. Every update has its own `event_update_id`.
+
+## Query parameters
+
+Takes `since`, `until`, `callsign`, `facility_id`, `atc_channel_ids`, and `airline_id` as described in [Selecting data](/concepts/selecting-data). An event matches the window when its `happened_at` or one of its updates' `happened_at` is in it.
+
+<ParamField query="q" type="string" required>
+  What you are looking for, e.g. `laser strike on approach` or `aircraft returning to the gate`.
+</ParamField>
+
+<ParamField query="since" type="string" required>
+  Start of the window, inclusive. RFC 3339.
+</ParamField>
+
+<ParamField query="until" type="string" required>
+  End of the window, exclusive. Must be after `since` and at most 48 hours later.
+</ParamField>
+
+<ParamField query="callsign" type="string">
+  ICAO callsign, e.g. `UAL406`. Case-insensitive.
+</ParamField>
+
+<ParamField query="facility_id" type="string">
+  A `facility_id` from `GET /api/v0/facilities`.
+</ParamField>
+
+<ParamField query="atc_channel_ids" type="string">
+  Comma-separated `atc_channel_id` values, e.g. `4,7,8`. Every channel must be available.
+</ParamField>
+
+<ParamField query="airline_id" type="integer">
+  An `airline_id` from `GET /api/v0/airlines`.
+</ParamField>
+
+<ParamField query="limit" default="10" type="integer">
+  Maximum events to return, 1 to 25.
+</ParamField>
+
+Results are the best matches in one page; there is no cursor. With `facility_id` or `atc_channel_ids`, a page can hold fewer than `limit` events.
+
+## Response
+
+<ResponseField name="events" type="array">
+  The events, best match first.
+
+  <Expandable title="event">
+    <ResponseField name="event_id" type="integer">
+      Id of the event as first reported.
+    </ResponseField>
+
+    <ResponseField name="atc_channel_id" type="integer">
+      The channel the event happened on.
+    </ResponseField>
+
+    <ResponseField name="facility_ids" type="string[]">
+      Facilities that channel belongs to.
+    </ResponseField>
+
+    <ResponseField name="happened_at" type="string">
+      When the event happened, as first reported, in UTC, accurate to within 20 seconds. See [Times](/concepts/times).
+    </ResponseField>
+
+    <ResponseField name="summary" type="string">
+      One-line summary as first reported, usually with a quote from the frequency.
+    </ResponseField>
+
+    <ResponseField name="callsigns" type="string[]">
+      ICAO callsigns of the flights involved, as first reported.
+    </ResponseField>
+
+    <ResponseField name="evidence_audio_sample_ids" type="string[]">
+      Transmissions the event was first found in. Fetch them with [Get transcript](/api-reference/transcripts/get) and [Get transcript audio](/api-reference/transcripts/audio).
+    </ResponseField>
+
+    <ResponseField name="updates" type="array">
+      Every later update of the event, oldest first; empty if it was never updated. The last one is the most complete.
+
+      <Expandable title="update">
+        <ResponseField name="event_update_id" type="integer">
+          Id of this update.
+        </ResponseField>
+
+        <ResponseField name="update_to_event_id" type="integer">
+          What this update revised: the `event_id`, or the `event_update_id` of an earlier update. An event can branch when two updates revise the same one.
+        </ResponseField>
+
+        <ResponseField name="happened_at" type="string">
+          When the event happened, as of this update.
+        </ResponseField>
+
+        <ResponseField name="summary" type="string">
+          One-line summary as of this update.
+        </ResponseField>
+
+        <ResponseField name="callsigns" type="string[]">
+          ICAO callsigns of the flights involved, as of this update.
+        </ResponseField>
+
+        <ResponseField name="evidence_audio_sample_ids" type="string[]">
+          Transmissions the event was found in, as of this update.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="similarity_score" type="number">
+      How closely the event matches `q`: the cosine similarity between `q` and the event's description, at most 1; higher is better. Scores are comparable across requests for the same `q`. It is the same score the live [`events`](/api-reference/live/events) topic compares with `minimum_similarity_score`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | `q`, `since`, or `until` is missing, or a parameter is invalid. |
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/events?since=2026-10-22T12:00:00Z&until=2026-10-23T12:00:00Z&q=returning+to+the+gate"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "events": [
+    {
+      "event_id": 5176678,
+      "atc_channel_id": 997,
+      "facility_ids": ["36bb4190-36e1-4aaf-b677-d9861a66cebb"],
+      "happened_at": "2026-10-23T00:14:32.653120731Z",
+      "summary": "Gate return, operations coordination, \"we're gonna have to head back to the gate\"",
+      "callsigns": ["DAL1042"],
+      "evidence_audio_sample_ids": ["9c9cfd6b-5de0-4a68-8ae1-5da0bb5a772a", "…"],
+      "updates": [
+        {
+          "event_update_id": 5176727,
+          "update_to_event_id": 5176678,
+          "happened_at": "2026-10-23T00:14:32.653120731Z",
+          "summary": "Gate return, operations coordination, \"we're gonna have to head back to the gate\"",
+          "callsigns": ["DAL1042"],
+          "evidence_audio_sample_ids": ["0b4d1e1a-8240-43b4-8710-0429be5c48f6", "…"]
+        },
+        {
+          "event_update_id": 5176921,
+          "update_to_event_id": 5176727,
+          "happened_at": "2026-10-23T00:14:32.653120731Z",
+          "summary": "Gate return, operations coordination, \"they're gonna send us back to gate 10\"",
+          "callsigns": ["DAL1042"],
+          "evidence_audio_sample_ids": ["0b4d1e1a-8240-43b4-8710-0429be5c48f6", "…"]
+        }
+      ],
+      "similarity_score": 0.71
+    }
+  ]
+}
+```
+
+</ResponseExample>

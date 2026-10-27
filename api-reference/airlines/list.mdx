@@ -1,0 +1,61 @@
+---
+title: "List airlines"
+description: "Lists the airlines that the airline_id filter accepts."
+api: "GET /api/v0/airlines"
+---
+
+Lists the airlines `airline_id` accepts. Airlines are ordered by `airline_id`.
+
+## Response
+
+<ResponseField name="airlines" type="array">
+  The airlines.
+
+  <Expandable title="airline">
+    <ResponseField name="airline_id" type="integer">
+      Unique id of the airline. Pass it as `airline_id`.
+    </ResponseField>
+
+    <ResponseField name="icao" type="string">
+      Three-letter ICAO designator. Callsigns starting with it belong to the airline.
+    </ResponseField>
+
+    <ResponseField name="iata" type="string | null">
+      Two-letter IATA designator.
+    </ResponseField>
+
+    <ResponseField name="telephony" type="string | null">
+      Radio telephony designator, e.g. `UNITED`.
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      Name of the airline.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" "https://api.enhancedradar.com/api/v0/airlines"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "airlines": [
+    {
+      "airline_id": 2,
+      "icao": "AAB",
+      "iata": null,
+      "telephony": "ABG",
+      "name": "ABELAG AVIATION"
+    }
+  ]
+}
+```
+
+</ResponseExample>

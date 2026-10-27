@@ -1,0 +1,304 @@
+---
+title: "Get airport status"
+description: "Returns what is going on at one airport right now: runways, flow, traffic programs, weather, and what was heard on frequency."
+api: "GET /api/v0/airports/status"
+---
+
+Returns what is going on at one airport right now.
+
+- `operations` is the airport's current configuration: runways in use, flight rules, arrival and departure rates, traffic counts, and active ground stops and ground delay programs, from FAA data and, where the FAA publishes none, from ADS-B and METARs.
+- `weather` is the airport's latest METAR and TAF.
+- `critical` and `notable` are observations: situations heard on the airport's available channels that change how aircraft operate there, such as a runway closure, a pilot report of wind shear, a pathfinder's result, or an equipment outage, each quoted from the transmissions it is based on.
+
+## Query parameters
+
+<ParamField query="facility_id" type="string" required>
+  An airport `facility_id` from `GET /api/v0/facilities`. TRACON and center facilities return `400`.
+</ParamField>
+
+## Response
+
+<ResponseField name="facility_id" type="string">
+  The requested facility.
+</ResponseField>
+
+<ResponseField name="operations" type="object">
+  The airport's current configuration.
+
+  <Expandable title="properties">
+    <ResponseField name="runways.arrivals" type="string[]">
+      Arrival runways in use, as charted, e.g. `27L`. From the airport configuration the FAA publishes; when the FAA has published none for the airport in the last 7 days, from ADS-B: the runways that at least 2 different aircraft landed on in the last 30 minutes, most used first, or, when no runway qualifies, the runway of the most recent landing in the last 60 minutes. ADS-B runways are available only at airports whose runway layout we have mapped. Empty when no source has data.
+    </ResponseField>
+
+    <ResponseField name="runways.departures" type="string[]">
+      Departure runways in use, on the same basis, from takeoffs.
+    </ResponseField>
+
+    <ResponseField name="runways.source" type="string | null">
+      Where the runways came from: `faa_airport_configuration`; `adsb_runway_operations` when every list came from at least 2 aircraft in the last 30 minutes; or `adsb_latest_runway_operation` when at least one list is the runway of a single most recent landing or takeoff, which is weaker evidence. `null` when both lists are empty.
+    </ResponseField>
+
+    <ResponseField name="runways.updated_at" type="string | null">
+      For runways from the FAA configuration, when the FAA published it; a configuration is published only when it changes, so this can be days old. For runways from ADS-B, the time of the most recent landing or takeoff on the listed runways. `null` when both lists are empty.
+    </ResponseField>
+
+    <ResponseField name="flight_rules" type="string | null">
+      The weather conditions in the FAA airport configuration, as published, e.g. `VMC` or `IMC`. When the FAA publishes none, derived from the latest METAR using the basic VFR minimums of 14 CFR 91.155: `VMC` when the ceiling is at least 1,000 ft and visibility at least 3 statute miles, otherwise `IMC`.
+    </ResponseField>
+
+    <ResponseField name="flight_rules_source" type="string | null">
+      Where `flight_rules` came from: `faa_airport_configuration` or `metar`.
+    </ResponseField>
+
+    <ResponseField name="flow.arrivals.planned_per_hour" type="integer | null">
+      The arrival rate in the FAA airport configuration. `null` when there is no configuration.
+    </ResponseField>
+
+    <ResponseField name="flow.arrivals.actual_last_hour" type="integer | null">
+      Arrivals that landed in the last hour, counted from FAA surface surveillance, or from touchdowns seen in ADS-B at airports without surface surveillance whose runway layout we have mapped. `null` when neither source covers the airport.
+    </ResponseField>
+
+    <ResponseField name="flow.arrivals.scheduled_next_hour" type="integer | null">
+      Flights scheduled to land in the next hour, from FAA flight plans. Cancelled flights are excluded.
+    </ResponseField>
+
+    <ResponseField name="flow.departures" type="object">
+      The same three fields for departures. `planned_per_hour` is the planned departure rate and `actual_last_hour` counts takeoffs.
+    </ResponseField>
+
+    <ResponseField name="programs" type="array">
+      Active traffic management programs at the airport. Empty when none.
+
+      <Expandable title="program">
+        <ResponseField name="type" type="string">
+          `ground_stop` or `ground_delay_program`.
+        </ResponseField>
+
+        <ResponseField name="reason" type="string">
+          The reason the FAA published, e.g. `THUNDERSTORMS` or `VOLUME`.
+        </ResponseField>
+
+        <ResponseField name="starts_at" type="string">
+          The program's published start.
+        </ResponseField>
+
+        <ResponseField name="ends_at" type="string">
+          The program's published end.
+        </ResponseField>
+
+        <ResponseField name="average_delay_minutes" type="number | null">
+          Average delay the FAA published for the program; for a ground stop, the anticipated average delay.
+        </ResponseField>
+
+        <ResponseField name="maximum_delay_minutes" type="integer | null">
+          Maximum delay published for the program; for a ground stop, the anticipated maximum delay.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="computed_at" type="string | null">
+      When `operations` and `weather` were computed. They are recomputed at least every 10 minutes, and within 5 minutes when runways, flight rules, rates, programs, the METAR, or the TAF change. When we have no data newer than 30 minutes, the runway and program lists are empty, the other `operations` fields, including `computed_at`, are `null`, and `weather.metar` and `weather.taf` are `null`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="weather" type="object">
+  The airport's latest METAR and TAF.
+
+  <Expandable title="properties">
+    <ResponseField name="metar" type="object | null">
+      The airport's latest METAR from aviationweather.gov. `null` when the airport has no METAR from the last 3 hours or no ICAO code. Fields: `raw` (the METAR as issued), `observed_at` (the observation time), and `flight_category` (`VFR`, `MVFR`, `IFR`, or `LIFR`, as aviationweather.gov computes it, or `null`).
+    </ResponseField>
+
+    <ResponseField name="taf" type="object | null">
+      The airport's latest terminal aerodrome forecast. `null` when the airport issues no TAF or its latest TAF has expired. Fields: `raw` (the TAF as issued), `issued_at`, `valid_from`, and `valid_to` (the period the TAF covers).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="critical" type="array">
+  Observations of major operational issues affecting the whole airport, such as a runway closure, a ground stop, a runway configuration change, or an emergency with response in progress. Newest first.
+</ResponseField>
+
+<ResponseField name="notable" type="array">
+  Other observations of note at the airport, such as a pilot report of turbulence or wind shear, a pathfinder's result, a navaid or lighting outage, or a laser illumination. Newest first.
+
+  <Expandable title="observation">
+    <ResponseField name="id" type="integer">
+      Unique id of the observation. It stays the same as the observation is updated.
+    </ResponseField>
+
+    <ResponseField name="tags" type="string[]">
+      What the observation is about, e.g. `runway_closure`, `windshear`, `pathfinder_flight`.
+    </ResponseField>
+
+    <ResponseField name="title" type="string">
+      Short headline.
+    </ResponseField>
+
+    <ResponseField name="summary" type="string">
+      The current state of the situation, in one or two sentences.
+    </ResponseField>
+
+    <ResponseField name="change" type="string">
+      What is new in the latest update, e.g. `Runway 9L reopened`. Empty when the observation has not been updated.
+    </ResponseField>
+
+    <ResponseField name="runways" type="string[]">
+      Runways the observation is about.
+    </ResponseField>
+
+    <ResponseField name="fixes" type="string[]">
+      Fixes, navaids, procedures, or routes the observation is about, e.g. `RIBIT`.
+    </ResponseField>
+
+    <ResponseField name="happened_at" type="string">
+      `received_at` of the newest transmission behind the latest update, accurate to within 20 seconds.
+    </ResponseField>
+
+    <ResponseField name="evidence" type="array">
+      The transmissions the latest update is based on, oldest first. Only transmissions on available channels are included.
+
+      <Expandable title="evidence">
+        <ResponseField name="audio_sample_id" type="string">
+          Pass it to [Get transcript](/api-reference/transcripts/get) for the full transcript or to [Get transcript audio](/api-reference/transcripts/audio) for the audio.
+        </ResponseField>
+
+        <ResponseField name="atc_channel_id" type="integer">
+          The channel the transmission was heard on.
+        </ResponseField>
+
+        <ResponseField name="received_at" type="string">
+          When the transmission was received, accurate to within 20 seconds.
+        </ResponseField>
+
+        <ResponseField name="quote" type="string">
+          Words quoted from the transmission's transcript.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="history" type="array">
+      Earlier updates of the observation, newest first, with the same fields as above except `id` and `history`. Empty for a new observation.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="generated_at" type="string">
+  When this response was built.
+</ResponseField>
+
+`critical` entries have the same fields as `notable` entries.
+
+An observation stays in the response until it has gone 60 minutes without an update; when a situation ends, its last update says so in `change`.
+
+<Warning>
+  Observations are written by a language model from transcripts and can contain mistakes. Check important details against the quoted transmissions.
+</Warning>
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | `facility_id` is missing or not a uuid, is not a covered facility, or is not an airport. |
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/airports/status?facility_id=23b485da-06ec-4d7d-8dc3-aa45e7e809c9"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "facility_id": "23b485da-06ec-4d7d-8dc3-aa45e7e809c9",
+  "operations": {
+    "runways": {
+      "arrivals": ["35L", "35R", "34R"],
+      "departures": ["25", "08"],
+      "source": "faa_airport_configuration",
+      "updated_at": "2026-10-24T13:06:00Z"
+    },
+    "flight_rules": "VMC",
+    "flight_rules_source": "faa_airport_configuration",
+    "flow": {
+      "arrivals": { "planned_per_hour": 102, "actual_last_hour": 66, "scheduled_next_hour": 45 },
+      "departures": { "planned_per_hour": 80, "actual_last_hour": 64, "scheduled_next_hour": 39 }
+    },
+    "programs": [],
+    "computed_at": "2026-10-24T20:55:26.988591Z"
+  },
+  "weather": {
+    "metar": {
+      "raw": "METAR KDEN 242053Z 36006G16KT 10SM FEW040 BKN070 BKN110 BKN150 BKN220 09/M02 A3032 RMK AO2 SLP233 T00941017 56013",
+      "observed_at": "2026-10-24T20:53:00Z",
+      "flight_category": "VFR"
+    },
+    "taf": {
+      "raw": "TAF KDEN 242048Z 2421/2524 05011KT P6SM SCT050 SCT150 BKN220 PROB30 2422/2424 -SHRA BKN035 FM250000 10007KT P6SM BKN030 ...",
+      "issued_at": "2026-10-24T20:48:00Z",
+      "valid_from": "2026-10-24T21:00:00Z",
+      "valid_to": "2026-10-26T00:00:00Z"
+    }
+  },
+  "critical": [],
+  "notable": [
+    {
+      "id": 96534,
+      "tags": ["medical_emergency"],
+      "title": "Inbound emergency United 2809 on RNAV Z 35R",
+      "summary": "United 2809 taxied via taxiways L and AA to gate A22 as a medical emergency, with ground traffic yielding and medics standing by.",
+      "change": "United 2809 taxied to gate A22 for medical emergency with medics standing by",
+      "runways": [],
+      "fixes": [],
+      "happened_at": "2026-10-24T20:05:45.297891Z",
+      "evidence": [
+        {
+          "audio_sample_id": "0d58f03f-23d8-4395-85de-30ae5ff8e299",
+          "atc_channel_id": 160,
+          "received_at": "2026-10-24T20:05:01.349866Z",
+          "quote": "if you catch opposite direction United at L, give way to their medical emergency"
+        },
+        {
+          "audio_sample_id": "f97e39a9-06d1-439c-b96e-a304cf4acdc1",
+          "atc_channel_id": 1793,
+          "received_at": "2026-10-24T20:05:45.297891Z",
+          "quote": "A A to your gate and its my understanding we have medics standing for by for you"
+        }
+      ],
+      "history": [
+        {
+          "tags": ["declared_emergency"],
+          "title": "Inbound emergency United 2809 on RNAV Z 35R",
+          "summary": "United 2809 landed on runway 35R, vacated the runway via taxiway P7, and was instructed to contact Ground on taxiway ED.",
+          "change": "United 2809 landed on runway 35R and exited via taxiway P7 to Ground",
+          "runways": ["35R"],
+          "fixes": [],
+          "happened_at": "2026-10-24T20:02:23.348152Z",
+          "evidence": [
+            {
+              "audio_sample_id": "24eae04c-2319-421e-9fc4-9a43857afdd4",
+              "atc_channel_id": 156,
+              "received_at": "2026-10-24T20:02:19.966387Z",
+              "quote": "United 2809, turn left P7, taxi via E D, on E D contact Ground"
+            },
+            {
+              "audio_sample_id": "d1cba472-a457-4711-bb05-0b7a955d37d4",
+              "atc_channel_id": 156,
+              "received_at": "2026-10-24T20:02:23.348152Z",
+              "quote": "P7ED, contact Ground there, United 2809"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "generated_at": "2026-10-24T20:47:12.414236Z"
+}
+```
+
+</ResponseExample>

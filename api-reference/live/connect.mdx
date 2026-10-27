@@ -1,0 +1,126 @@
+---
+title: "Connect"
+description: "Open the Enhanced Radar live WebSocket and subscribe to topics. Message format, replies, errors, and connection limits."
+---
+
+<Badge>GET</Badge> `wss://api.enhancedradar.com/api/v0/live`
+
+Opens one WebSocket for live updates. Subscribe to as many topics as you need on the same connection, and unsubscribe when you no longer want one. Send the API key on the WebSocket upgrade request. The key is checked once, when the connection opens.
+
+```bash
+websocat -H "Authorization: Bearer $ER_API_KEY" "wss://api.enhancedradar.com/api/v0/live"
+```
+
+For a walkthrough, see [Live updates](/guides/live-updates).
+
+## Messages
+
+Every message in either direction is one JSON text message.
+
+<Steps>
+  <Step title="Subscribe">
+    Send `subscribe` with a `subscription_topic` and the topic's `params`:
+
+    ```json
+    {"action": "subscribe", "request_id": "3f9a7c21-5d4e-4b8a-9c6f-0e2d1a7b4c85", "subscription_topic": "pireps", "params": {"q": "turbulence", "latitude": 37.62, "longitude": -122.38, "radius_nm": 60}}
+    ```
+
+    The server answers with `subscribed` and the `subscription_id` it assigned:
+
+    ```json
+    {"message_type": "subscribed", "request_id": "3f9a7c21-5d4e-4b8a-9c6f-0e2d1a7b4c85", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21", "subscription_topic": "pireps"}
+    ```
+  </Step>
+  <Step title="Receive updates">
+    Each update for that subscription arrives as `update`, with the topic's payload in `data`:
+
+    ```json
+    {"message_type": "update", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21", "subscription_topic": "pireps", "data": {"event_id": 5180144, "...": "..."}}
+    ```
+  </Step>
+  <Step title="Unsubscribe">
+    Send `unsubscribe` with the `subscription_id`. The server answers with `unsubscribed`; no more updates for that subscription are sent after it.
+
+    ```json
+    {"action": "unsubscribe", "request_id": "b71e4d09-2a6c-4f3e-8d5b-9c0a1e7f6d42", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21"}
+    {"message_type": "unsubscribed", "request_id": "b71e4d09-2a6c-4f3e-8d5b-9c0a1e7f6d42", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21", "subscription_topic": "pireps"}
+    ```
+  </Step>
+</Steps>
+
+A message the server cannot act on is answered with `error`. The connection stays open, and other subscriptions are not affected.
+
+```json
+{"message_type": "error", "request_id": "3f9a7c21-5d4e-4b8a-9c6f-0e2d1a7b4c85", "subscription_topic": "pireps", "error": "radius_nm must be a number from 1 to 150"}
+```
+
+## Client messages
+
+<ParamField body="action" type="string" required>
+  `subscribe` or `unsubscribe`.
+</ParamField>
+
+<ParamField body="request_id" type="string">
+  A UUID you generate is recommended, but any string is accepted; it is copied into the reply so you can match the two.
+</ParamField>
+
+<ParamField body="subscription_topic" type="string">
+  With `subscribe`: `transcripts`, `events`, `flight_status`, `airport_status`, or `pireps`.
+</ParamField>
+
+<ParamField body="params" type="object">
+  With `subscribe`: the topic's parameters. Numbers are JSON numbers and lists are JSON arrays. Unknown parameters are rejected.
+</ParamField>
+
+<ParamField body="subscription_id" type="string">
+  With `unsubscribe`: a `subscription_id` from a `subscribed` reply on this connection.
+</ParamField>
+
+## Server messages
+
+<ResponseField name="message_type" type="string">
+  `subscribed`, `update`, `unsubscribed`, or `error`.
+</ResponseField>
+
+<ResponseField name="request_id" type="string">
+  The `request_id` of the client message this replies to. Absent on `update` and when the client sent none.
+</ResponseField>
+
+<ResponseField name="subscription_id" type="string">
+  The subscription the message is about. On `error`, the `subscription_id` the client sent, if any.
+</ResponseField>
+
+<ResponseField name="subscription_topic" type="string">
+  The subscription's topic.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  On `update` only: the topic's payload, described under each topic.
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  On `error` only: what was wrong, e.g. a missing or invalid parameter, or a failure on our side; retry those later.
+</ResponseField>
+
+## Topics
+
+| Topic | Page |
+| --- | --- |
+| `transcripts` | [Transcripts topic](/api-reference/live/transcripts) |
+| `events` | [Events topic](/api-reference/live/events) |
+| `flight_status` | [Flight status topic](/api-reference/live/flight-status) |
+| `airport_status` | [Airport status topic](/api-reference/live/airport-status) |
+| `pireps` | [PIREPs topic](/api-reference/live/pireps) |
+
+## Behavior
+
+The server handles client messages one at a time, in the order they arrive, and replies to each before reading the next. A `subscribe` that has to prepare a search or load a status can take a few seconds. Once `subscribed` is sent, updates for that subscription can arrive at any time, interleaved with updates for other subscriptions and with replies.
+
+- Subscriptions belong to the connection. When the connection closes, every subscription on it ends; after reconnecting, subscribe again.
+- Updates are not acknowledged, and there is no backfill: only what happens after a subscription starts is sent.
+- A client that falls 256 messages behind across all its subscriptions, or that does not accept a message within one second, is disconnected and should reconnect.
+- The server sends no messages of its own while nothing matches.
+- A connection with no traffic in either direction for 60 seconds is closed. Send a WebSocket ping at least every 30 seconds; the server answers each ping with a pong.
+- A client message over 4 KiB closes the connection.
+
+The upgrade request itself returns `401` or `403` as described in [Errors](/concepts/errors); everything after that is reported with `error` messages.

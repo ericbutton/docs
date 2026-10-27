@@ -1,0 +1,93 @@
+---
+title: "Search facilities"
+description: "Returns the airports, TRACONs, and centers that best match a code or name, best match first."
+api: "GET /api/v0/facilities/search"
+---
+
+Returns the facilities that best match a code or name, best match first. Unlike [List facilities](/api-reference/facilities/list), it searches every facility we know about, including airports we do not cover, and returns no channels.
+
+Accepts the `api:onboarding` permission as well as `api:read`.
+
+## Query parameters
+
+<ParamField query="q" type="string" required>
+  Text to match, at most 100 characters. Case-insensitive. Matches the start of an airport's ICAO, IATA, or FAA code, a TRACON or center code, or the start of any word in a facility's name or an airport's city.
+
+  Punctuation is ignored: apostrophes and periods are dropped, so `ohare` matches `O'Hare` and `st louis` matches `St. Louis`, and other punctuation separates words, so `wilkes barre` matches `Wilkes-Barre`.
+</ParamField>
+
+<ParamField query="facility_type" type="string">
+  `airport`, `tracon`, or `center`. Only facilities of that type are returned.
+</ParamField>
+
+<ParamField query="limit" default="10" type="integer">
+  Number of results, 1 to 25.
+</ParamField>
+
+## Response
+
+<ResponseField name="facilities" type="array">
+  The matching facilities, best match first.
+
+  <Expandable title="facility">
+    <ResponseField name="facility_id" type="string">
+      Unique id of the facility. Pass it as `facility_id`, or as `primary_airport_facility_id` when saving an onboarding profile.
+    </ResponseField>
+
+    <ResponseField name="facility_type" type="string">
+      `airport`, `tracon`, or `center`.
+    </ResponseField>
+
+    <ResponseField name="facility_code" type="string">
+      Airport display code such as `SFO`, or the TRACON or center code such as `N90` or `ZAU`.
+    </ResponseField>
+
+    <ResponseField name="facility_name" type="string">
+      Name of the facility.
+    </ResponseField>
+
+    <ResponseField name="airport_municipality" type="string | null">
+      The airport's city. `null` for TRACONs and centers, and for airports without one.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Ranking
+
+Results are ranked by how the query matched:
+
+1. An exact ICAO, IATA, FAA, TRACON, or center code.
+2. The start of an IATA, FAA, TRACON, or center code.
+3. The start of any word in the facility's name, alternate name, or city.
+4. The start of an ICAO code only.
+
+Within each group, US facilities come before others, then large airports before medium and small ones. In group 3, a name or city that starts with the query then comes before one where a later word does, so `san francisco` returns San Francisco International before Oakland San Francisco Bay. Remaining ties are ordered by name.
+
+New facilities can take up to 15 minutes to appear.
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/facilities/search?q=san&facility_type=airport&limit=3"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "facilities": [
+    {
+      "facility_id": "3667d976-1566-4887-ae34-c024d92f46c7",
+      "facility_type": "airport",
+      "facility_code": "SFO",
+      "facility_name": "San Francisco",
+      "airport_municipality": "San Francisco, CA"
+    }
+  ]
+}
+```
+
+</ResponseExample>

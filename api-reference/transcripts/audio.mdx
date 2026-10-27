@@ -1,0 +1,55 @@
+---
+title: "Get transcript audio"
+description: "Returns a short-lived link to the WAV audio of one ATC transmission."
+api: "GET /api/v0/transcripts/{audio_sample_id}/audio"
+---
+
+Returns a short-lived link to the WAV audio of one transmission. Download or play it before it expires; request a new link if it has.
+
+## Path parameters
+
+<ParamField path="audio_sample_id" type="string" required>
+  Unique id of the transmission, a UUID.
+</ParamField>
+
+## Response
+
+<ResponseField name="audio_sample_id" type="string">
+  The transmission.
+</ResponseField>
+
+<ResponseField name="audio_link" type="string">
+  Signed HTTPS link to the WAV audio of this transmission only.
+</ResponseField>
+
+<ResponseField name="audio_link_expires_at" type="string">
+  When `audio_link` stops working, 3 minutes after the response.
+</ResponseField>
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | `audio_sample_id` is not a UUID. |
+| `404` | No transmission with that id is available to the API. |
+
+<RequestExample>
+
+```bash cURL
+curl -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/transcripts/29e13bdf-08fa-4e44-87a5-ed81a17919a7/audio"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "audio_sample_id": "29e13bdf-08fa-4e44-87a5-ed81a17919a7",
+  "audio_link": "https://.../audio.wav?Policy=...&Signature=...&Key-Pair-Id=...",
+  "audio_link_expires_at": "2026-10-22T23:44:06.102311Z"
+}
+```
+
+</ResponseExample>
