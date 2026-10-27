@@ -72,7 +72,15 @@
           },
           {
             "group": "Endpoints",
-            "pages": []
+            "pages": [
+              "api-reference/transcripts",
+              "api-reference/events",
+              "api-reference/flight-status",
+              "api-reference/airport-status",
+              "api-reference/pireps",
+              "api-reference/answers",
+              "api-reference/subscriptions"
+            ]
           },
           {
             "group": "Endpoint examples",

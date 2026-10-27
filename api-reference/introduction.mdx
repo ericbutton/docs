@@ -1,33 +1,43 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API reference"
+sidebarTitle: "Introduction"
+description: "Endpoints, authentication and conventions for the Enhanced Radar API."
+icon: "code"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
-
-## Welcome
-
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+<Warning>
+  **Draft.** Endpoint paths come from the v1 proposal. Request and response fields shown in this reference are placeholders until the OpenAPI spec is published.
+</Warning>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+Send your API key with every request. Test keys return fixed sample data and can't spend credits.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```bash
+curl "$ER_API_BASE/transcripts?callsign=UAL123" \
+  -H "Authorization: Bearer $ER_API_KEY"
 ```
+
+## Endpoints
+
+| Product | Method | Path |
+| --- | --- | --- |
+| [Transcripts](/api-reference/transcripts) | `GET` | `/transcripts` |
+| [Audio](/api-reference/transcripts#audio) | `GET` | `/transcripts/{id}/audio` |
+| [Events](/api-reference/events) | `POST` | `/events/query` |
+| [Flight Status](/api-reference/flight-status) | `GET` | `/flight-status` |
+|  | `GET` | `/flight-status/history` |
+| [Airport Status](/api-reference/airport-status) | `GET` | `/airports/{icao}/status` |
+|  | `GET` | `/airports/{icao}/status/history` |
+| [PIREPs](/api-reference/pireps) | `POST` | `/pireps/query` |
+| [Answers](/api-reference/answers) | `POST` | `/answers` |
+|  | `POST` | `/answers/{id}/runs` |
+| [Subscriptions](/api-reference/subscriptions) | `POST` | `/subscriptions` |
+
+## Conventions
+
+- Times are in UTC, in ISO 8601 format.
+- Airports are identified by ICAO code, for example `KSFO`.
+- Radio frequencies are in MHz, as a decimal string.
+- Unknown values are `null` and empty lists are `[]`. Missing facts are never guessed.
+- Each response shows what the request cost. See [Spending controls](/concepts/spending-controls).

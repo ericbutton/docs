@@ -41,7 +41,7 @@ To get pushed data, create a subscription with [`POST /subscriptions`](/api-refe
 
 - We send each update as a **signed HTTPS `POST`** to your webhook URL.
 - Every update has a **unique ID** that stays the same across retries. Use it to ignore duplicates.
-- Store the update before you return a `2xx` response. Any other response, or a timeout, counts as a failure.
+- Store the update before you return a `2xx` response.
 - We **retry** temporary failures with backoff. Retries are free.
 - If your endpoint was down, you can **recover missed updates for up to 24 hours**.
 

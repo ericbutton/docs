@@ -1,0 +1,70 @@
+---
+title: "Transcripts & Audio"
+description: "The text of each radio transmission, and its audio clip."
+icon: "message-square-text"
+---
+
+A transcript is the text of one radio transmission. You can search transcripts by words, callsign, time, airport, channel or speaker, and download the audio of a single transmission.
+
+| | Price |
+| --- | --- |
+| Transcript | 3 credits ($0.03), or $30 per 1,000 |
+| Audio clip | Banded by monthly volume, from 0.3 credits ($0.003). See [audio rates](/concepts/pricing#audio-rates). |
+
+## List transcripts
+
+<div className="not-prose">`GET /transcripts`</div>
+
+<Note>Parameter names are placeholders until the v1 OpenAPI spec is final.</Note>
+
+<ParamField query="q" type="string">
+  Words to search for in the transcript text.
+</ParamField>
+<ParamField query="callsign" type="string">
+  Aircraft callsign, for example `UAL123`.
+</ParamField>
+<ParamField query="airport" type="string">
+  Airport ICAO code, for example `KSFO`.
+</ParamField>
+<ParamField query="channel" type="string">
+  Radio channel or frequency.
+</ParamField>
+<ParamField query="speaker" type="string">
+  Who was speaking, for example a controller or a pilot.
+</ParamField>
+<ParamField query="start" type="string">
+  Start of the time window, in UTC.
+</ParamField>
+<ParamField query="end" type="string">
+  End of the time window, in UTC.
+</ParamField>
+
+```bash
+curl "$ER_API_BASE/transcripts?airport=KSFO&start=2026-10-24T18:00:00Z&end=2026-10-24T19:00:00Z" \
+  -H "Authorization: Bearer $ER_API_KEY"
+```
+
+## Audio
+
+<div className="not-prose">`GET /transcripts/{id}/audio`</div>
+
+Returns the audio clip for one transmission.
+
+- Audio needs **paid credits**.
+- Each clip is one transmission. There's no bulk or continuous audio.
+- Downloading the same clip again is free for 30 days.
+- An account can download at most **1,000 clips** until it is at least 36 hours old **and** has made $1,000 in successful payments. Prepaid credits count even if unused; free credits don't. This cap doesn't reset.
+
+## Live transcripts
+
+To have new transcripts sent to you, create a [subscription](/api-reference/subscriptions) with the `transcripts` dataset.
+
+## What it costs
+
+| Example | Transcripts | Cost |
+| --- | --- | --- |
+| One flight | 110 | $3.30 |
+| One day at SFO | 72,597 | $2,177.91 |
+| One day across all receivers | 3,198,535 | $95,956.05 |
+
+Airport and network counts were measured on October 20, 2026 (UTC). Duplicate recordings may lower the bill, and flight coverage may be partial.

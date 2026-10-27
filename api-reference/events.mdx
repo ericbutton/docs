@@ -1,0 +1,72 @@
+---
+title: "Events"
+description: "Describe the events you want, then get them live or search for them."
+icon: "bell"
+---
+
+Describe the events you want in plain language, then narrow them with filters. For example: go-arounds, runway changes or reported emergencies at one airport.
+
+There are two event sets:
+
+- **Priority:** serious safety issues or major disruption.
+- **Operational:** a broader set of operational events.
+
+| Delivery | Price |
+| --- | --- |
+| Push | 500 credits ($5) per matching event, sent when ready |
+| Pull | 100 credits ($1) per matching event, plus the query fee |
+| Pull query fee | 100 credits ($1) per query or results page, even with no matches |
+
+The same event is charged once. Corrections and retries are free, and reading an event you bought is free for 30 days.
+
+## Query events
+
+<div className="not-prose">`POST /events/query`</div>
+
+<Note>Field names are placeholders until the v1 OpenAPI spec is final.</Note>
+
+<ParamField body="description" type="string" required>
+  The events you want, in plain language.
+</ParamField>
+<ParamField body="set" type="string">
+  `priority` or `operational`.
+</ParamField>
+<ParamField body="filters" type="object">
+  Narrow the results.
+  <Expandable title="properties">
+    <ParamField body="callsign" type="string">Aircraft callsign.</ParamField>
+    <ParamField body="airport" type="string">Airport ICAO code.</ParamField>
+    <ParamField body="channel" type="string">Radio channel.</ParamField>
+    <ParamField body="start" type="string">Start time, in UTC.</ParamField>
+    <ParamField body="end" type="string">End time, in UTC.</ParamField>
+  </Expandable>
+</ParamField>
+
+```bash
+curl -X POST "$ER_API_BASE/events/query" \
+  -H "Authorization: Bearer $ER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Go-arounds",
+    "set": "operational",
+    "filters": { "airport": "KSFO", "start": "2026-10-24T00:00:00Z" }
+  }'
+```
+
+Pull has no added delay compared with push.
+
+## Live events
+
+To have matching events sent to you, create a [subscription](/api-reference/subscriptions) with the `events` dataset, using the same description and filters.
+
+## What it costs
+
+For 20 matching events a day:
+
+| Delivery | Per day | Per year |
+| --- | --- | --- |
+| Push | $100 | $36,500 |
+| Pull every hour | $44 | $16,060 |
+| Pull every 5 seconds | $17,300 | $6,314,500 |
+
+Polling often costs more because each query is charged. Use push for live delivery.

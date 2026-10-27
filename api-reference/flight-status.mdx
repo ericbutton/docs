@@ -1,0 +1,50 @@
+---
+title: "Flight Status"
+description: "Follow a flight's instructions, runway, altitude and frequency."
+icon: "plane"
+---
+
+Follow one flight by callsign and time. A status includes the flight's latest instructions, runway, altitude and frequency, with the sources behind each fact and a list of what's missing.
+
+| | Price |
+| --- | --- |
+| Status update | 12 credits ($0.12), or $120 per 1,000 |
+
+You pay for the first status and for each real change. Rewording is free. Reading the sources is included; full source records cost extra.
+
+## Get a flight's status
+
+<div className="not-prose">`GET /flight-status`</div>
+
+<Note>Parameter and field names are placeholders until the v1 OpenAPI spec is final.</Note>
+
+<ParamField query="callsign" type="string" required>
+  Aircraft callsign, for example `UAL123`.
+</ParamField>
+<ParamField query="time" type="string" required>
+  A time during the flight, in UTC. Used to pick the right flight when a callsign is reused.
+</ParamField>
+
+### Response
+
+<ResponseField name="instructions" type="array">The latest instructions from controllers.</ResponseField>
+<ResponseField name="runway" type="string | null">Assigned runway.</ResponseField>
+<ResponseField name="altitude" type="string | null">Assigned altitude.</ResponseField>
+<ResponseField name="frequency_mhz" type="string | null">Current radio frequency, in MHz.</ResponseField>
+<ResponseField name="gate" type="string | null">Assigned gate. **Proposed** field, at the same price per update.</ResponseField>
+<ResponseField name="sources" type="array">The transcripts behind each fact, with when each was reported.</ResponseField>
+<ResponseField name="missing" type="array">Facts we couldn't find.</ResponseField>
+
+## Status history
+
+<div className="not-prose">`GET /flight-status/history`</div>
+
+Returns every status update for a flight, in order. Takes the same parameters as `GET /flight-status`.
+
+## Live updates
+
+To have updates sent to you, create a [subscription](/api-reference/subscriptions) with the `flight_status` dataset.
+
+## What it costs
+
+With 25 updates per flight and 500 flights a month, Flight Status costs **$3 per flight**, or **$18,000 a year**. We may capture only part of a flight.
