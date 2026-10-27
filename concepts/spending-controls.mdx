@@ -1,0 +1,27 @@
+---
+title: "Spending controls"
+description: "Estimate costs, set hard limits and see what each request cost."
+icon: "shield-check"
+---
+
+You're charged per item, so you should always know what a request will cost and be able to cap it.
+
+- **Free estimates.** Ask for an estimate before running a request. Estimates are free.
+- **Hard spending limit.** Set an account limit. Once you reach it, requests that would spend credits are refused instead of charged.
+- **Charge on every response.** Each response shows what that request cost.
+
+## Answers limits
+
+Answers have their own limits, because a single answer can check many records:
+
+- Each answer has a spending limit. The default is **5,000 credits ($50)**, and you can change it.
+- Your account balance and spending limit also apply.
+- Each answer costs at least **300 credits ($3)**. If less than that is available, we skip the run.
+- If a run stops early, you pay only for the records it read, and you get a partial answer.
+
+## Ways to spend less
+
+- **Use push for live data.** Polling charges a query fee every time, even with no matches. See the [events example](/concepts/pricing#example-bills).
+- **Re-read for free.** Records you bought in the last 30 days are free to read again.
+- **Narrow your filters.** You pay only for matching records, so tighter filters cost less.
+- **Use test keys while building.** They return fixed samples and can't spend credits.

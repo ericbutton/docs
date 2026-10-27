@@ -1,0 +1,114 @@
+---
+title: "Pricing and credits"
+description: "Prices in credits, how to buy them and what typical apps cost."
+icon: "coins"
+---
+
+<Warning>
+  **Draft proposal.** Prices may change before v1. All dollar amounts are USD.
+</Warning>
+
+The API is priced in credits. **1 credit = $0.01.** You pay per item, with no minimum volume.
+
+## Credits
+
+- Every account starts with **100,000 free credits ($1,000)**.
+- Buy more in three sizes:
+
+| Credits | Price |
+| --- | --- |
+| 1,000 | $10 |
+| 10,000 | $100 |
+| 100,000 | $1,000 |
+
+- No card or monthly plan is required. Paid credits never expire.
+- Fractional credits are counted exactly.
+- Records you've bought are free to read again for 30 days.
+- Audio needs paid credits. Free credits can't be used for audio.
+
+## Prices
+
+| Product | Price | In USD |
+| --- | --- | --- |
+| [Transcripts](/api-reference/transcripts) | 3 credits per transcript | $0.03 ($30 per 1,000) |
+| [Audio](/api-reference/transcripts#audio) | Banded, from 0.3 credits per clip | See [audio rates](#audio-rates) |
+| [Events](/api-reference/events), push | 500 credits per matching event | $5 |
+| [Events](/api-reference/events), pull | 100 credits per matching event, plus 100 credits per query or results page | $1 + $1 |
+| [Flight Status](/api-reference/flight-status) | 12 credits per status update | $0.12 ($120 per 1,000) |
+| [Airport Status](/api-reference/airport-status) | 150 credits per status update | $1.50 ($1,500 per 1,000) |
+| [PIREPs](/api-reference/pireps) | 15 credits per pilot report | $0.15 ($150 per 1,000) |
+| [Answers](/api-reference/answers) | Per record checked, 300 credit minimum | See [Answers rates](#answers-rates) |
+
+### What's free
+
+- Reading a record you bought in the last 30 days
+- Retries and corrections
+- Rewording of a Flight Status or Airport Status update (you pay only for the first status and each real change)
+- Rebroadcasts of a PIREP
+- Charging the same event twice: each event is charged once
+
+### Audio rates
+
+Audio is one radio transmission per clip. Each rate applies only to the clips in that band, and counts reset monthly.
+
+| Clips this month | Credits per clip | USD per clip |
+| --- | --- | --- |
+| 1 – 1,000 | 0.3 | $0.003 |
+| 1,001 – 5,000 | 10 | $0.10 |
+| 5,001 – 10,000 | 50 | $0.50 |
+| 10,001 – 15,000 | 200 | $2.00 |
+| 15,001 – 50,000 | 800 | $8.00 |
+| 50,001 + | 3,138 | $31.38 |
+
+For example, 1,000 clips a month costs $3, and 10,000 clips a month costs $2,903.
+
+<Note>
+  **Audio access cap.** An account can download at most 1,000 clips until it is at least 36 hours old **and** has made $1,000 in successful payments. Prepaid credits count even if unused; free credits don't. This cap doesn't reset.
+</Note>
+
+### Answers rates
+
+| Records checked | Credits per record | USD per record |
+| --- | --- | --- |
+| First 1,000 | 2 | $0.02 |
+| Next 4,000 | 0.25 | $0.0025 |
+| After 5,000 | 0.04 | $0.0004 |
+
+So 1,000 records cost $20, 5,000 cost $30 and 50,000 cost $48. Each answer costs at least $3. See [Answers](/api-reference/answers) for limits.
+
+## Example bills
+
+<AccordionGroup>
+  <Accordion title="Flight app: 500 flights a month">
+    | Usage | Per flight | Per year (6,000 flights) |
+    | --- | --- | --- |
+    | Transcripts, push: 80 per flight | $2.40 | $14,400 |
+    | Flight Status, push: 12 updates per flight | $1.44 | $8,640 |
+    | **Total** | **$3.84** | **$23,040** |
+
+    Optional: pulling 50 audio clips a month (one for every 10 flights) adds $0.15 a month. We may capture only part of a flight.
+  </Accordion>
+
+  <Accordion title="Airport dashboard: one airport">
+    Live updates plus an hourly check of runway use and delays.
+
+    | Usage | Per day | Per year |
+    | --- | --- | --- |
+    | Airport Status, push: 100 updates a day | $150 | $54,750 |
+    | PIREPs, push: about 16 reports a day | $2.47 | $900 |
+    | Answers, hourly: 24 answers a day, up to 50 records each | $72 | $26,280 |
+    | **Total** | **$224.47** | **$81,930** |
+
+    Adding 1,000 transcripts a day adds $10,950 a year.
+  </Accordion>
+
+  <Accordion title="Events: 20 matching events a day">
+    | Delivery | Per day | Per year |
+    | --- | --- | --- |
+    | Push, sent when ready | $100 | $36,500 |
+    | Pull every hour: 24 queries + 20 events | $44 | $16,060 |
+    | Pull every 5 seconds: 17,280 queries + 20 events | $17,300 | $6,314,500 |
+
+    Polling often gets expensive because each query is charged. Use push for live delivery.
+  </Accordion>
+</AccordionGroup>

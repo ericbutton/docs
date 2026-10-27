@@ -1,97 +1,57 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Enhanced Radar API"
+sidebarTitle: "Overview"
+description: "US air traffic radio data from 200 receivers, transcribed by our own model."
+icon: "radio-tower"
 ---
 
-## Setting up
+<Warning>
+  **Draft.** Products, endpoints and prices come from a draft proposal and may change before v1.
+</Warning>
 
-Get your documentation site up and running in minutes.
+Enhanced Radar records US air traffic control radio from 200 receivers and transcribes it with our own model. The API turns those recordings into six products you can build on.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
+<CardGroup cols={2}>
+  <Card title="Transcripts & Audio" icon="message-square-text" href="/api-reference/transcripts">
+    The text of each radio transmission, plus the audio clip. 3 credits per transcript.
+  </Card>
+
+  <Card title="Events" icon="bell" href="/api-reference/events">
+    Describe the events you want, then get them live or search for them. From 100 credits per event.
+  </Card>
+
+  <Card title="Flight Status" icon="plane" href="/api-reference/flight-status">
+    Follow a flight by callsign and time. 12 credits per update.
+  </Card>
+
+  <Card title="Airport Status" icon="tower-control" href="/api-reference/airport-status">
+    Follow runway use, restrictions and delays at an airport. 150 credits per update.
+  </Card>
+
+  <Card title="PIREPs" icon="cloud-sun" href="/api-reference/pireps">
+    Weather and runway reports from pilots. 15 credits per report.
+  </Card>
+
+  <Card title="Answers" icon="sparkles" href="/api-reference/answers">
+    Ask questions about selected data, places and dates, once or hourly. 300 credit minimum per answer.
+  </Card>
+</CardGroup>
+
+## How it works
+
+- **Pull or push.** Pull: your app requests data. Push: we send new data to your webhook as it arrives. See [Pull and push](/concepts/pull-and-push).
+- **Choose what to follow.** Filter by callsign and time, an airport, or an area.
+- **Pay per item.** Prices are in credits, and 1 credit = \$0.01. There's no minimum volume, card or monthly plan. See [Pricing and credits](/concepts/pricing).
+- **Check the source.** Each fact shows when it was reported, where it came from and what's missing. See [Sources and coverage](/concepts/sources-and-coverage).
+
+## Start free
+
+Every account starts with **100,000 free credits (\$1,000)**. You don't need a card or a sales call.
+
+<Card title="Quickstart" icon="rocket" horizontal href="/quickstart">
+  Get an API key and make your first request.
 </Card>
 
-## Make it yours
+## Developer tools
 
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+Planned for v1: TypeScript and Python SDKs, a CLI, copyable requests and an OpenAPI reference.

@@ -1,0 +1,52 @@
+---
+title: "Pull and push"
+description: "Request data when you need it, or have new data sent to your webhook."
+icon: "arrow-left-right"
+---
+
+Every product can be read in one of two ways:
+
+- **Pull:** your app requests data. Use this for past data or occasional checks.
+- **Push:** we send new data to your webhook as soon as it's ready. Use this for live updates.
+
+## Choosing what to follow
+
+Both pull and push take the same filters. Depending on the product, you can choose:
+
+- a **callsign and time**
+- an **airport**
+- an **area**
+- a **channel** or **speaker** (Transcripts)
+- a plain-language **description** of what you want (Events and PIREPs)
+
+## Push: subscriptions
+
+To get pushed data, create a subscription with [`POST /subscriptions`](/api-reference/subscriptions). It names a dataset, your filters and your webhook URL.
+
+| Dataset | Product |
+| --- | --- |
+| `transcripts` | [Transcripts](/api-reference/transcripts) |
+| `events` | [Events](/api-reference/events) |
+| `flight_status` | [Flight Status](/api-reference/flight-status) |
+| `airport_status` | [Airport Status](/api-reference/airport-status) |
+| `pireps` | [PIREPs](/api-reference/pireps) |
+
+[Answers](/api-reference/answers) are scheduled differently: you save an answer with a schedule and a webhook.
+
+## Webhook delivery
+
+<Warning>
+  **Draft.** Signing details and the exact payload envelope will be in the v1 reference.
+</Warning>
+
+- We send each update as a **signed HTTPS `POST`** to your webhook URL.
+- Every update has a **unique ID** that stays the same across retries. Use it to ignore duplicates.
+- Store the update before you return a `2xx` response. Any other response, or a timeout, counts as a failure.
+- We **retry** temporary failures with backoff. Retries are free.
+- If your endpoint was down, you can **recover missed updates for up to 24 hours**.
+
+## Field conventions
+
+- Times are in UTC, in ISO 8601 format, for example `2026-10-24T18:42:00Z`.
+- Radio frequencies are in MHz, as a decimal string, for example `"120.500"`.
+- Unknown values are `null`, and empty lists are `[]`. We never guess a missing value.

@@ -27,7 +27,12 @@
           },
           {
             "group": "Concepts",
-            "pages": []
+            "pages": [
+              "concepts/pricing",
+              "concepts/pull-and-push",
+              "concepts/spending-controls",
+              "concepts/sources-and-coverage"
+            ]
           },
           {
             "group": "Customization",
