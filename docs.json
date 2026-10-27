@@ -26,6 +26,10 @@
             ]
           },
           {
+            "group": "Concepts",
+            "pages": []
+          },
+          {
             "group": "Customization",
             "pages": [
               "essentials/settings",
@@ -60,6 +64,10 @@
               "api-reference/introduction",
               "codex-demo"
             ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": []
           },
           {
             "group": "Endpoint examples",
