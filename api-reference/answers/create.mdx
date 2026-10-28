@@ -29,7 +29,7 @@ JSON, at most 256 KiB.
 </ParamField>
 
 <ParamField body="record_limit" default="5000" type="integer">
-  Most records to review, 300 to 50000. Research stops when it is reached, and the answer says what could not be checked. Lowered to what the organization's credits cover.
+  Most records to review, 300 to 50000. Research stops when it is reached, and the answer says what could not be checked. Lowered to what the organization's available balance covers.
 </ParamField>
 
 <ParamField body="evidence_limit" default="25" type="integer">
@@ -77,7 +77,7 @@ JSON, at most 256 KiB.
 </ResponseField>
 
 <ResponseField name="record_limit" type="integer">
-  The record limit used, after lowering it to what the organization's credits cover.
+  The record limit used, after lowering it to what the organization's available balance covers.
 </ResponseField>
 
 <ResponseField name="is_record_limit_reached" type="boolean">
@@ -92,16 +92,18 @@ JSON, at most 256 KiB.
   Answers are written by a language model from the records it reviewed and can contain mistakes. Check important details against the evidence.
 </Warning>
 
-## Credits
+## Billing
 
-Each record reviewed costs one credit, with a minimum of 300 per answer. The `X-Credits-Charged` and `X-Credit-Balance` response headers report the charge and the balance after it.
+Each record reviewed costs \$0.01 USD, with a \$3.00 minimum per answer (300 records). For example, the 418 records charged in the response below cost \$4.18. Current rates and the billing-unit conversion are returned by `GET /api/v0/pricing`.
+
+The `X-Credits-Charged` and `X-Credit-Balance` response headers report the charge and remaining balance as integer billing units. Convert either value to USD with `header_value * usd_cents_per_credit / 100`, using `usd_cents_per_credit` from the pricing response. At the current conversion of \$0.01 per unit, a charge header of \`418\` means \$4.18, and a balance header of `100000` means \$1,000.00. The header names are part of the API contract; their raw values are not dollar amounts.
 
 ## Errors
 
 | Status | Meaning |
 | --- | --- |
 | `400` | The body is not valid JSON, or a field is missing or invalid. `error` says which. |
-| `402` | The organization's credits do not cover the 300-record minimum. |
+| `402` | The organization's available balance does not cover the \$3.00 minimum (300 records). |
 | `502` | The answer could not be produced. Nothing is charged. Retry later. |
 
 <RequestExample>

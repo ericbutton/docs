@@ -35,7 +35,7 @@ You need an API key with the `api:read` permission. Keys are issued by Enhanced 
 
     ```bash
     curl -H "Authorization: Bearer $ER_API_KEY" \
-      "https://api.enhancedradar.com/api/v0/transcripts?since=2026-10-22T20:00:00Z&until=2026-10-22T22:00:00Z&facility_id=3667d976-1566-4887-ae34-c024d92f46c7"
+      "https://api.enhancedradar.com/api/v0/transcripts?since=2026-10-22T20:00:00Z&until=2026-10-22T23:00:00Z&facility_id=3667d976-1566-4887-ae34-c024d92f46c7"
     ```
 
     Transcripts come back newest first. To get the next page, pass `next_cursor` as `cursor` with the same `since`, `until`, and filters.

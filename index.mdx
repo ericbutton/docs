@@ -41,7 +41,7 @@ Every route is under `https://api.enhancedradar.com`. All paths are under `/api/
 
 ## Pull or stream
 
-- **Pull:** REST endpoints return records over a time window of up to 48 hours. See [Selecting data](/concepts/selecting-data).
+- **Pull:** Transcript and event searches accept time windows of up to 48 hours; [PIREPs](/api-reference/pireps/search) are limited to 6 hours. See [Selecting data](/concepts/selecting-data).
 - **Stream:** one WebSocket at `GET /api/v0/live` streams transcripts, events, flight statuses, airport statuses, and PIREPs as they happen. See [Live updates](/guides/live-updates).
 
 ## Learn the basics
