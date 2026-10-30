@@ -6,6 +6,10 @@ api: "GET /api/v0/transcripts"
 
 Returns transcripts of ATC transmissions in a time window. Each transcript covers one transmission, from either the controller or a pilot. Without `q` it lists transmissions newest first, one page at a time. With `q` it returns the transmissions whose words best match the search text.
 
+<Frame>
+  <video controls preload="none" playsInline className="w-full aspect-video" src="https://enhancedradar.com/media/api/api-01-transcripts-and-audio-v1.mp4" poster="https://enhancedradar.com/media/api/api-01-transcripts-and-audio-poster-v1.jpg" />
+</Frame>
+
 ## Query parameters
 
 Takes `since`, `until`, `callsign`, `facility_id`, `atc_channel_ids`, and `airline_id` as described in [Selecting data](/concepts/selecting-data), plus `q`, `match`, `limit`, and `cursor`.

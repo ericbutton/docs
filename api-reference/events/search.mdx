@@ -8,6 +8,10 @@ Searches events: notable things that happened on frequency, such as a go-around,
 
 An event is reported once and then updated as more transmissions about it arrive. Each event is returned as it was first reported, with all its updates nested under it in `updates`. Every update has its own `event_update_id`.
 
+<Frame>
+  <video controls preload="none" playsInline className="w-full aspect-video" src="https://enhancedradar.com/media/api/api-02-events-v1.mp4" poster="https://enhancedradar.com/media/api/api-02-events-poster-v1.jpg" />
+</Frame>
+
 ## Query parameters
 
 Takes `since`, `until`, `callsign`, `facility_id`, `atc_channel_ids`, and `airline_id` as described in [Selecting data](/concepts/selecting-data). An event matches the window when its `happened_at` or one of its updates' `happened_at` is in it.

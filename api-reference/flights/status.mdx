@@ -6,6 +6,10 @@ api: "GET /api/v0/flights/status"
 
 Returns the latest status of one flight as of a given time: a one-sentence summary of the most recent substantive ATC communication with the flight, such as a clearance, an instruction, or a pilot report. Readbacks, check-ins, and sign-offs do not change the status. The status is built from the flight's transmissions on available channels in the hour before `at`.
 
+<Frame>
+  <video controls preload="none" playsInline className="w-full aspect-video" src="https://enhancedradar.com/media/api/api-03-flight-status-v1.mp4" poster="https://enhancedradar.com/media/api/api-03-flight-status-poster-v1.jpg" />
+</Frame>
+
 ## Query parameters
 
 <ParamField query="callsign" type="string" required>
