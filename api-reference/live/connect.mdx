@@ -32,10 +32,10 @@ Every message in either direction is one JSON text message.
     ```
   </Step>
   <Step title="Receive updates">
-    Each update for that subscription arrives as `update`, with the topic's payload in `data`:
+    Each update for that subscription arrives as `update`, with the topic's payload in `data` and what the message cost in `charged_usd` and `balance_usd`:
 
     ```json
-    {"message_type": "update", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21", "subscription_topic": "pireps", "data": {"event_id": 5180144, "...": "..."}}
+    {"message_type": "update", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21", "subscription_topic": "pireps", "charged_usd": "0.150", "balance_usd": "9.850", "data": {"event_id": 5180144, "...": "..."}}
     ```
   </Step>
   <Step title="Unsubscribe">
@@ -104,6 +104,14 @@ A message the server cannot act on is answered with `error`. The connection stay
   On `update` only: the topic's payload, described under each topic.
 </ResponseField>
 
+<ResponseField name="charged_usd" type="string">
+  On `update`: what this message cost, in US dollars with three decimal places, e.g. `"0.150"`.
+</ResponseField>
+
+<ResponseField name="balance_usd" type="string">
+  On a billed `update`: the organization's balance after this charge, in the same format. Omitted for a first `flight_status` update whose `status` is `null`, which is not billed.
+</ResponseField>
+
 <ResponseField name="error" type="string">
   On `error`: what was wrong, e.g. a missing or invalid parameter, a refused charge, or a failure on our side; retry those later. On an `unsubscribed` the server sends when it ends a subscription: why it ended it.
 </ResponseField>
@@ -130,7 +138,7 @@ Opening a connection and subscribing are free. Each update sent is charged at th
 | `airport_status` | Each status sent, including the first. | \$1.50 per status |
 | `pireps` | Each PIREP sent. | \$0.15 per PIREP |
 
-The first update of `flight_status` and `airport_status` is charged when you subscribe; if that charge is refused, the server answers with `error` instead of `subscribed`. If the charge for a later update is refused, that subscription ends: the server sends `unsubscribed` with an `error` that says why. See [Pricing](/pricing) and [Billing](/concepts/billing).
+The first update of `flight_status` and `airport_status` is charged when you subscribe; if that charge is refused, the server answers with `error` instead of `subscribed`. If the charge for a later update is refused, that subscription ends: the server sends `unsubscribed` with an `error` that says why. Each `update` reports what it cost in `charged_usd` and, when billed, the balance after it in `balance_usd`. The upgrade response does not report the cost of later updates. See [Pricing](/pricing) and [Billing](/concepts/billing).
 
 ## Behavior
 

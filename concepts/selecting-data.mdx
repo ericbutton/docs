@@ -8,7 +8,7 @@ Pull endpoints that return records over time share these query parameters. `sinc
 | Name | Required | Description |
 | --- | --- | --- |
 | `since` | yes | Start of the window. RFC 3339. |
-| `until` | yes | End of the window. Must be after `since` and at most 48 hours later. |
+| `until` | yes | End of the window: exclusive for transcripts, inclusive for event searches. Must be after `since` and at most 48 hours later. |
 | `callsign` | no | ICAO callsign, e.g. `UAL406`. Case-insensitive. |
 | `facility_id` | no | A `facility_id` from `GET /api/v0/facilities`. Selects records from that facility's available channels. |
 | `atc_channel_ids` | no | Comma-separated `atc_channel_id` values from `GET /api/v0/facilities`, e.g. `4,7,8`. Selects records from those channels. Every channel must have `is_available` set; otherwise the request returns `400`. With `facility_id`, only channels that are in the list and in the facility are used. |

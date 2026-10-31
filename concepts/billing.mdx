@@ -20,7 +20,9 @@ The Enhanced Radar API charges data in US dollars to the balance of the organiza
 - A request is charged all at once, after its data is loaded and before it is returned.
 - When the charge is refused, the request returns `402` or `403`, nothing is returned, and nothing is charged. See [Refusals](#refusals).
 - A request that fails for another reason, such as `400`, `404`, or `5xx`, is not charged.
-- Responses from charged routes carry two headers: `X-Charged-Usd`, what the request cost, and `X-Balance-Usd`, the organization's balance after it. Both are US dollars with three decimal places, e.g. `0.030` and `987.650`.
+- A charge is final once it is recorded. If the connection fails after that, the charge is not reversed, and retrying the request can be charged again.
+- Every REST response carries `X-Charged-Usd`, what the request actually cost in US dollars with three decimal places, e.g. `0.030`. Free routes, empty transcript or PIREP results, a flight status whose `status` is `null`, and refused requests report `0.000`.
+- When a request was billed, its response also carries `X-Balance-Usd`, the organization's balance after the charge, in the same format, e.g. `987.650`. It is omitted when no balance was loaded.
 
 To see the charge for any request, print the response headers:
 
@@ -28,6 +30,11 @@ To see the charge for any request, print the response headers:
 curl -s -D /dev/stderr -o /dev/null -H "Authorization: Bearer $ER_API_KEY" \
   "https://api.enhancedradar.com/api/v0/transcripts/29e13bdf-08fa-4e44-87a5-ed81a17919a7"
 ```
+
+## Receipts on the live WebSocket and MCP
+
+- **Live WebSocket:** each `update` message reports `charged_usd`, what that message cost, and, when it was billed, `balance_usd`, the balance after it. Both are strings in US dollars with three decimal places, e.g. `"0.150"`. A first `flight_status` update whose `status` is `null` reports `"0.000"` without `balance_usd`. The WebSocket upgrade response does not report the cost of later updates. See [Connect](/api-reference/live/connect).
+- **MCP:** each tool result reports the same `charged_usd` and `balance_usd` fields in `_meta.billing` and in an additional JSON text content block. Free tools and failed tool calls report `charged_usd` `"0.000"` without a balance. See [MCP server](/guides/mcp).
 
 ## What is charged
 
@@ -54,7 +61,7 @@ These routes are free: `GET /health`, `GET /api/v0/docs`, `GET /api/v0/pricing`,
 
 <AccordionGroup>
   <Accordion title="Empty results">
-    A transcript list or PIREP search that returns nothing costs nothing. An event search always costs one `event_query_page`, even when no event matches. A flight status whose `status` is `null` is free and carries no billing headers.
+    A transcript list or PIREP search that returns nothing costs nothing. An event search always costs one `event_query_page`, even when no event matches. A flight status whose `status` is `null` is free: `X-Charged-Usd` is `0.000` and `X-Balance-Usd` is omitted.
   </Accordion>
   <Accordion title="Requesting the same data again">
     Every request is charged for what it returns, even if an earlier request returned the same transcript, event, or status. Store what you need instead of fetching it again.

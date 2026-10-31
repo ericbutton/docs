@@ -52,7 +52,7 @@ Returns the latest status of one flight as of a given time: a one-sentence summa
 
 ## Billing
 
-The status is charged as one `flight_status_update`, at \$0.12, each time you request it. A response whose `status` is `null` is free and carries no billing headers. See [Pricing](/pricing) and [Billing](/concepts/billing).
+The status is charged as one `flight_status_update`, at \$0.12, each time you request it. A response whose `status` is `null` is free: `X-Charged-Usd` is `0.000` and `X-Balance-Usd` is omitted. See [Pricing](/pricing) and [Billing](/concepts/billing).
 
 ## Errors
 

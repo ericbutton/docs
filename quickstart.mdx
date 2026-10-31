@@ -28,7 +28,7 @@ You need `curl` and [`jq`](https://jqlang.org).
       | jq '.current_prices[] | select(.priced_item == "transcript" or .priced_item == "transcript_audio") | {priced_item, price_bands}'
     ```
 
-    Multiply credits by `usd_cents_per_credit` from the same response for US cents. See [Credits and billing](/concepts/billing).
+    Each band's `usd_per_unit` is the price of one unit in US dollars. See [Pricing](/pricing) and [Billing](/concepts/billing).
   </Step>
   <Step title="Find a covered airport">
     Search for an airport by code or name. Search is free.
@@ -118,10 +118,10 @@ You need `curl` and [`jq`](https://jqlang.org).
     Play `transmission.wav` with any audio player, for example `afplay transmission.wav` on macOS.
   </Step>
   <Step title="See what it cost">
-    Every charged response carries `X-Credits-Charged`, the credits the request cost, and `X-Credit-Balance`, your organization's balance after it. The two requests above saved their headers:
+    Every response carries `X-Charged-Usd`, what the request cost in US dollars with three decimal places, and charged responses also carry `X-Balance-Usd`, your organization's balance after it. The two requests above saved their headers:
 
     ```bash
-    grep -i '^x-credit' transcripts-headers.txt audio-headers.txt
+    grep -i -E '^x-(charged|balance)-usd' transcripts-headers.txt audio-headers.txt
     ```
 
     The dashboard also shows your organization's usage and balance.

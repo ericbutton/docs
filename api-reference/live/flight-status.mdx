@@ -28,7 +28,7 @@ After that, each transmission on an available channel that is attributed to the 
 
 ## Billing
 
-Each status sent is charged as one `flight_status_update`, at \$0.12. The first status is charged when you subscribe, unless its `status` is `null`, and again each time you subscribe, including after a reconnect. See [Pricing](/pricing) and [Billing](/concepts/billing).
+Each status sent is charged as one `flight_status_update`, at \$0.12. The first status is charged when you subscribe, unless its `status` is `null`, and again each time you subscribe, including after a reconnect. Each `update` reports `charged_usd`, and `balance_usd` when it was billed; a first update whose `status` is `null` reports `charged_usd` `"0.000"` without `balance_usd`. See [Pricing](/pricing) and [Billing](/concepts/billing).
 
 ## Refusals
 

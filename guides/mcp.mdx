@@ -55,7 +55,7 @@ When the client connects, it opens a browser window. Sign in to your Enhanced Ra
 | `search_airlines` | Turns an airline code or name into an `airline_id`. | Free |
 | `get_pricing` | What each charged item costs in US dollars, scheduled price changes, and account tiers, the same as [`GET /api/v0/pricing`](/api-reference/pricing). | Free |
 | `get_airport_status` | Runways in use, flight rules, flow, traffic programs, METAR and TAF, and what was heard on frequency at one airport. | \$1.50 |
-| `get_transcripts` | Transmissions in a window of up to 48 hours, newest first, or the best matches for a text search. | \$0.03 per transcript returned |
+| `get_transcripts` | Transmissions in a window of up to 48 hours, newest first, or the best matches for a text search. `q` cannot be combined with `callsign`, `airline_id`, or `cursor`. | \$0.03 per transcript returned |
 | `get_transcript` | One transmission by `audio_sample_id`. | \$0.03 |
 | `get_transcript_audio` | A link to one transmission's audio. The link expires 3 minutes after it is created. | \$0.02 to \$40.00 per link, by monthly volume. See [Audio clips](/pricing#audio-clips). |
 | `search_events` | Notable things that happened on frequency, described in plain words. | \$1.00 per search plus \$1.00 per event returned |
@@ -64,7 +64,23 @@ When the client connects, it opens a browser window. Sign in to your Enhanced Ra
 | `search_pireps` | Pilot weather reports within a radius of a point, in a window of up to 6 hours. | \$0.15 per PIREP returned |
 | `answer_question` | Answers a question that needs several lookups combined, such as whether a flight diverted and why, with the evidence behind it. | \$0.01 per record reviewed, at least 300 and at most `record_limit` (default 1,000) |
 
-Tools are charged to your organization the same way as the matching REST routes. See [Pricing](/pricing) and [Billing](/concepts/billing).
+Tools are charged to your organization the same way as the matching REST routes: an empty transcript or PIREP result is free, as is `get_flight_status` when `status` is `null`, and `search_events` charges for the search even when no event matches. See [Pricing](/pricing) and [Billing](/concepts/billing).
+
+Transcript results from `get_transcripts` and `get_transcript` leave out word timings: `word_timestamps` is `null`. The REST API returns them when they are available.
+
+## Charges
+
+Every tool result reports what the call cost, in `_meta.billing` and in an additional JSON text content block after the tool's data:
+
+```json
+{"charged_usd": "0.030", "balance_usd": "987.650"}
+```
+
+- `charged_usd` is what the call cost, in US dollars with three decimal places.
+- `balance_usd` is your organization's balance after the charge, in the same format. It is included when the call was billed.
+- Free tools and failed tool calls report `charged_usd` `"0.000"` without a balance.
+
+The tool's own data stays in `structuredContent` and its JSON text content block.
 
 ## Access
 
