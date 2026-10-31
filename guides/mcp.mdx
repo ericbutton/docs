@@ -1,0 +1,69 @@
+---
+title: "Connect an AI assistant with the Enhanced Radar MCP server"
+sidebarTitle: "MCP server"
+description: "Connect Claude, Cursor, or another MCP client to the Enhanced Radar MCP server, sign in with OAuth, and use its tools for ATC transcripts, events, and statuses."
+keywords: ["mcp", "model context protocol", "claude", "cursor", "agent", "oauth"]
+---
+
+The Enhanced Radar MCP server gives AI assistants and agents the same data as the REST API through Model Context Protocol tools. Your client signs in with your Enhanced Radar account over OAuth, so you don't paste an API key into it.
+
+## Server URL
+
+```text
+https://api.enhancedradar.com/api/mcp
+```
+
+The server uses the streamable HTTP transport.
+
+## Connect
+
+<Tabs>
+  <Tab title="Claude Code">
+    ```bash
+    claude mcp add --transport http enhanced-radar https://api.enhancedradar.com/api/mcp
+    ```
+
+    Then run `/mcp` in Claude Code, choose `enhanced-radar`, and sign in.
+  </Tab>
+  <Tab title="Other clients">
+    Add a remote MCP server with the URL above. Clients that read an `mcpServers` JSON file usually take this shape:
+
+    ```json
+    {
+      "mcpServers": {
+        "enhanced-radar": {
+          "url": "https://api.enhancedradar.com/api/mcp"
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+When the client connects, it opens a browser window. Sign in to your Enhanced Radar account and approve the connection.
+
+<Tip>
+  The **MCP** page of the [dashboard](https://api.enhancedradar.com) has a prompt you can copy into your assistant. It asks the assistant to set up the connection, walk you through signing in, and show you an example with real data.
+</Tip>
+
+## Tools
+
+| Tool | What it does | Charged |
+| --- | --- | --- |
+| `search_facilities` | Turns an airport, TRACON, or center code or name into a `facility_id`. | No |
+| `get_facility` | Lists a facility's channels and their `atc_channel_id`s. | No |
+| `search_airlines` | Turns an airline code or name into an `airline_id`. | No |
+| `get_airport_status` | Runways in use, flight rules, flow, traffic programs, METAR and TAF, and what was heard on frequency at one airport. | Yes |
+| `get_transcripts` | Transmissions in a window of up to 48 hours, newest first, or the best matches for a text search. | Yes |
+| `get_transcript` | One transmission by `audio_sample_id`. | Yes |
+| `get_transcript_audio` | A link to one transmission's audio. The link expires 3 minutes after it is created. | Yes |
+| `search_events` | Notable things that happened on frequency, described in plain words. | Yes |
+| `get_event` | One event with all its updates. | Yes |
+| `get_flight_status` | The latest status of one flight as of a given time. | Yes |
+| `search_pireps` | Pilot weather reports within a radius of a point, in a window of up to 6 hours. | Yes |
+
+Charged tools are billed to your organization's credits the same way as the matching REST routes. See [Credits and billing](/concepts/billing).
+
+## Access
+
+`search_facilities` works as soon as you sign in. The other tools need an account that has finished onboarding in the [dashboard](https://api.enhancedradar.com). When a tool reports that your account has not finished setup or is out of credits, follow the link in its message.

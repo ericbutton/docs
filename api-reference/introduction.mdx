@@ -14,7 +14,7 @@ All paths are under `/api/v0` except `/health`.
 
 ## Authentication
 
-Send an API key as a bearer token. Every route requires the `api:read` permission, except `GET /health`, which is public, and `GET /api/v0/facilities/search`, which also accepts `api:onboarding`. See [Authentication](/authentication).
+Send an API key as a bearer token. Every route requires the `api:read` permission, except `GET /health`, which is public, and `GET /api/v0/facilities/search` and `GET /api/v0/pricing`, which also accept `api:onboarding`. See [Authentication](/authentication).
 
 ```http
 Authorization: Bearer sk_...
@@ -26,6 +26,7 @@ Authorization: Bearer sk_...
 | --- | --- | --- |
 | `GET` | [`/health`](/api-reference/health) | Liveness check. Public. |
 | `GET` | [`/api/v0/docs`](/api-reference/docs) | This reference as Markdown. |
+| `GET` | [`/api/v0/pricing`](/api-reference/pricing) | What each item costs in credits, and the account tiers and their limits. |
 | `GET` | [`/api/v0/facilities`](/api-reference/facilities/list) | Facilities we cover and their channels. |
 | `GET` | [`/api/v0/facilities/search`](/api-reference/facilities/search) | Airports, TRACONs, and centers that best match a code or name. |
 | `GET` | [`/api/v0/airlines`](/api-reference/airlines/list) | Airlines that `airline_id` accepts. |
@@ -45,6 +46,8 @@ Authorization: Bearer sk_...
 - [Selecting data](/concepts/selecting-data): `since`, `until`, and filters shared by pull endpoints.
 - [Times](/concepts/times): RFC 3339, UTC, and `received_at` precision.
 - [Errors](/concepts/errors): error format and status codes.
+- [Credits and billing](/concepts/billing): what each route and live topic charges.
+- [Interpreting results](/concepts/interpreting-results): what empty, `null`, and updated results mean.
 
 <Warning>
   Statuses, events, observations, PIREP conditions, and answers are written by a language model from transcripts and can contain mistakes. Check important details against the transcripts and evidence.

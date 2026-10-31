@@ -9,7 +9,7 @@ Answers a question about aviation operations by researching radio transcripts fr
 Nothing is stored between requests. To ask a follow-up, send the earlier questions and answers again in `messages`, with the new question last. Earlier answers are used only to understand what the new question refers to; every answer is researched again from the records.
 
 <Note>
-  An answer usually takes from several seconds to a few minutes. Keep the connection open until the response arrives.
+  An answer usually takes from several seconds to a few minutes. Keep the connection open until the response arrives. If the connection closes first, research stops and nothing is charged.
 </Note>
 
 <Frame>
@@ -34,6 +34,8 @@ JSON, at most 256 KiB.
 
 <ParamField body="record_limit" default="5000" type="integer">
   Most records to review, 300 to 50000. Research stops when it is reached, and the answer says what could not be checked. Lowered to what the organization's available balance covers.
+
+  This is also the most records one answer can be charged for. At the default of 5000 and the current rate of \$0.01 per record, one answer can cost up to \$50.00. Set `record_limit` to the most you want to spend on one answer.
 </ParamField>
 
 <ParamField body="evidence_limit" default="25" type="integer">
@@ -100,14 +102,17 @@ JSON, at most 256 KiB.
 
 Each record reviewed costs \$0.01 USD, with a \$3.00 minimum per answer (300 records). For example, the 418 records charged in the response below cost \$4.18. Current rates and the billing-unit conversion are returned by `GET /api/v0/pricing`.
 
-The `X-Credits-Charged` and `X-Credit-Balance` response headers report the charge and remaining balance as integer billing units. Convert either value to USD with `header_value * usd_cents_per_credit / 100`, using `usd_cents_per_credit` from the pricing response. At the current conversion of \$0.01 per unit, a charge header of \`418\` means \$4.18, and a balance header of `100000` means \$1,000.00. The header names are part of the API contract; their raw values are not dollar amounts.
+The `X-Credits-Charged` and `X-Credit-Balance` response headers report the charge and remaining balance as integer billing units. Convert either value to USD with `header_value * usd_cents_per_credit / 100`, using `usd_cents_per_credit` from the pricing response. At the current conversion of \$0.01 per unit, a charge header of `418` means \$4.18, and a balance header of `100000` means \$1,000.00. The header names are part of the API contract; their raw values are not dollar amounts.
+
+Nothing is charged when an answer fails (`502`), including when the client disconnects before the response. A request is never deduplicated: retrying it starts a new answer, which is researched and charged again. See [Credits and billing](/concepts/billing).
 
 ## Errors
 
 | Status | Meaning |
 | --- | --- |
 | `400` | The body is not valid JSON, or a field is missing or invalid. `error` says which. |
-| `402` | The organization's available balance does not cover the \$3.00 minimum (300 records). |
+| `402` | The organization's available balance does not cover the \$3.00 minimum (300 records). This is checked before research starts. |
+| `403` | The key is not owned by an organization, or charging the answer would go over a limit of the organization's account tier. The tier limit is checked when the answer is charged, after research; the answer is not returned and nothing is charged. |
 | `502` | The answer could not be produced. Nothing is charged. Retry later. |
 
 <RequestExample>
@@ -115,7 +120,7 @@ The `X-Credits-Charged` and `X-Credit-Balance` response headers report the charg
 ```bash cURL
 curl -X POST -H "Authorization: Bearer $ER_API_KEY" -H "Content-Type: application/json" \
   "https://api.enhancedradar.com/api/v0/answers" \
-  -d '{"messages": [{"role": "user", "content": "Did United 254 divert last night?"}], "format": "json", "json_schema": {"type": "object", "properties": {"diverted": {"type": "boolean"}, "diversion_airport": {"type": "string"}}}}'
+  -d '{"messages": [{"role": "user", "content": "Did United 254 divert last night?"}], "record_limit": 1000, "format": "json", "json_schema": {"type": "object", "properties": {"diverted": {"type": "boolean"}, "diversion_airport": {"type": "string"}}}}'
 ```
 
 </RequestExample>
@@ -151,7 +156,7 @@ curl -X POST -H "Authorization: Bearer $ER_API_KEY" -H "Content-Type: applicatio
     "web_pages": []
   },
   "records_reviewed": {"transmissions": 412, "adsb_positions": 0, "swim_records": 6, "total": 418},
-  "record_limit": 5000,
+  "record_limit": 1000,
   "is_record_limit_reached": false,
   "records_charged": 418
 }

@@ -26,6 +26,10 @@ Returns a short-lived link to the WAV audio of one transmission. Download or pla
   When `audio_link` stops working, 3 minutes after the response.
 </ResponseField>
 
+## Billing
+
+Each link is charged as one `transcript_audio`, including a new link for a transmission whose earlier link expired. The rate steps up with the number of links charged to your organization in the calendar month (UTC); see `price_bands` in [Get pricing](/api-reference/pricing) and [Credits and billing](/concepts/billing).
+
 ## Errors
 
 | Status | Meaning |

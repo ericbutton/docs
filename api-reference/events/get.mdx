@@ -46,6 +46,10 @@ Returns one event and all its updates, in the same shape as an entry of [Search 
   Every later update of the event, oldest first, with `event_update_id`, `update_to_event_id`, `happened_at`, `summary`, `callsigns`, and `evidence_audio_sample_ids`. See [Search events](/api-reference/events/search).
 </ResponseField>
 
+## Billing
+
+The event, with all its updates, is charged as one `event_pull`, each time you request it. See [Credits and billing](/concepts/billing).
+
 ## Errors
 
 | Status | Meaning |

@@ -1,0 +1,56 @@
+---
+title: "Interpret empty, null, and changing results"
+sidebarTitle: "Interpreting results"
+description: "What empty lists, null statuses, unavailable channels, event updates, and expired airport observations mean in Enhanced Radar API responses."
+keywords: ["empty", "null", "is_available", "troubleshooting", "coverage", "stale"]
+---
+
+An Enhanced Radar API request can succeed and still return nothing, a `null`, or a result that changes later. This page explains what each of those means, so a display built on the API tells your users the right thing.
+
+## Coverage
+
+| Situation | What it means |
+| --- | --- |
+| [Facility search](/api-reference/facilities/search) finds an airport | Only that the facility exists. Search covers every facility we know about, including ones we do not cover. Check [`GET /api/v0/facilities`](/api-reference/facilities/list) for coverage. |
+| A facility is in `GET /api/v0/facilities` | We cover at least one of its channels. Check each channel's `is_available`. |
+| A channel has `is_available` set to `true` | The API serves that channel's data. It does not report whether we are receiving the channel right now, so an available channel can still return no transmissions for a period. |
+| A channel has `is_available` set to `false` | The API returns no data for it. ATIS channels are always `false`. Email [support@enhancedradar.com](mailto:support@enhancedradar.com) with the `atc_channel_id` to ask for a channel. |
+
+## Empty and null results
+
+| Situation | What it means |
+| --- | --- |
+| `GET /api/v0/transcripts` returns no transcripts | Nothing matched in the window. A `callsign` we have never heard also returns an empty list, not an error. An unknown `facility_id`, `airline_id`, or `atc_channel_id`, or an unavailable channel, returns `400` instead. |
+| Flight status `status` is `null` | The flight had no substantive communication on available channels in the hour before `at`. This includes a callsign we have never heard. Readbacks, check-ins, and sign-offs do not count. |
+| Event search returns fewer than `limit` events | Fewer events matched well enough, or some matches were on channels outside your `facility_id` or `atc_channel_ids`. There is no next page. |
+| PIREP search returns nothing | No PIREP in the window and area matched `q` well enough, or a recent PIREP is not searchable yet. A PIREP can take a few minutes after it is heard to become searchable. |
+| Airport status `operations` fields are `null` and its lists are empty | We have no operations data for the airport newer than 30 minutes. `weather.metar` and `weather.taf` are `null` in that case too. |
+
+## Results that change
+
+| Situation | What it means |
+| --- | --- |
+| An event has `updates` | The top-level `summary`, `happened_at`, and `callsigns` are the event as first reported. Later information is in `updates`, oldest first; the last update is the most complete. |
+| A transcript's `callsigns` changes | Callsign attribution can be corrected after a transmission is first processed. The live `transcripts` topic does not resend a transmission after a correction; fetch it again with [Get transcript](/api-reference/transcripts/get) for the current attribution. |
+| An airport observation disappears | The observation went 60 minutes without an update. That does not mean the situation ended. When a situation ends while it is still being tracked, its last update says so in `change`. |
+| A flight status changes | A new substantive communication with the flight changed it. Use `status_at` to order statuses. |
+
+## When a request succeeds but returns nothing
+
+<Steps>
+  <Step title="Check coverage">
+    Find the facility in `GET /api/v0/facilities` and confirm that the channels you expect have `is_available` set to `true`.
+  </Step>
+  <Step title="Check the window">
+    `since` and `until` are compared with `received_at` (transcripts) or `happened_at` (events and PIREPs), in UTC. Make sure the window covers when the traffic happened, and remember that the maximum window is 48 hours for transcripts and events and 6 hours for PIREPs. See [Selecting data](/concepts/selecting-data).
+  </Step>
+  <Step title="Remove filters">
+    Run the request with only `since`, `until`, and `facility_id`. If transcripts come back, a `callsign`, `airline_id`, or `atc_channel_ids` filter excluded them. Callsigns are ICAO, e.g. `UAL406`, not `UA406`.
+  </Step>
+  <Step title="Broaden the search">
+    For `GET /api/v0/events` and `GET /api/v0/pireps`, describe what you want in different words. Results are ranked by meaning, and weak matches are left out. For PIREPs, also try a larger `radius_nm`.
+  </Step>
+  <Step title="Contact support">
+    If an available channel returns nothing for a window when you expect traffic, email [support@enhancedradar.com](mailto:support@enhancedradar.com) with the request and its `X-Request-ID` response header.
+  </Step>
+</Steps>

@@ -1,0 +1,85 @@
+---
+title: "Credits and billing"
+sidebarTitle: "Billing"
+description: "How the Enhanced Radar API charges credits: what each route and live topic costs, when a request is charged, account tier limits, and refusals."
+keywords: ["billing", "credits", "pricing", "402", "account tier", "X-Credits-Charged"]
+---
+
+The Enhanced Radar API charges data in credits to the organization that owns the API key. This page explains which routes and live topics are charged, when a charge happens, and what happens when credits run out. Prices themselves come from [`GET /api/v0/pricing`](/api-reference/pricing), which is free to call.
+
+## How a charge works
+
+- Each charged item has a `priced_item` name and a price in credits, listed by [`GET /api/v0/pricing`](/api-reference/pricing). `usd_cents_per_credit` in the same response converts credits to US cents.
+- A request is charged all at once, after its data is loaded and before it is returned.
+- When the charge is refused, the request returns `402` or `403`, nothing is returned, and nothing is charged. See [Refusals](#refusals).
+- A request that fails for another reason, such as `400`, `404`, or `5xx`, is not charged.
+- Responses from charged routes carry two headers: `X-Credits-Charged`, the credits the request cost, and `X-Credit-Balance`, the organization's balance after it. Both are integer credits, not dollar amounts.
+
+To see the charge for any request, print the response headers:
+
+```bash
+curl -s -D /dev/stderr -o /dev/null -H "Authorization: Bearer $ER_API_KEY" \
+  "https://api.enhancedradar.com/api/v0/transcripts/29e13bdf-08fa-4e44-87a5-ed81a17919a7"
+```
+
+## What is charged
+
+| Route or topic | Charged for | `priced_item` |
+| --- | --- | --- |
+| [`GET /api/v0/transcripts`](/api-reference/transcripts/list) | Each transcript returned. | `transcript` |
+| [`GET /api/v0/transcripts/{audio_sample_id}`](/api-reference/transcripts/get) | The transcript. | `transcript` |
+| [`GET /api/v0/transcripts/{audio_sample_id}/audio`](/api-reference/transcripts/audio) | Each audio link. The rate steps up with the number of audio links charged to the organization in the calendar month (UTC). | `transcript_audio` |
+| [`GET /api/v0/events`](/api-reference/events/search) | Each search, even when nothing matches, plus each event returned. | `event_query_page`, `event_pull` |
+| [`GET /api/v0/events/{event_id}`](/api-reference/events/get) | The event. | `event_pull` |
+| [`GET /api/v0/flights/status`](/api-reference/flights/status) | The status. Free when `status` is `null`. | `flight_status_update` |
+| [`GET /api/v0/airports/status`](/api-reference/airports/status) | The status. | `airport_status_update` |
+| [`GET /api/v0/pireps`](/api-reference/pireps/search) | Each PIREP returned. | `pirep` |
+| [`POST /api/v0/answers`](/api-reference/answers/create) | Each record reviewed, with a minimum of 300 per answer. | `answer_record` |
+| Live [`transcripts`](/api-reference/live/transcripts) | Each update sent. | `transcript` |
+| Live [`events`](/api-reference/live/events) | Each update sent: the first report and each later update of an event. | `event_push` |
+| Live [`flight_status`](/api-reference/live/flight-status) | Each update sent, including the first. | `flight_status_update` |
+| Live [`airport_status`](/api-reference/live/airport-status) | Each update sent, including the first. | `airport_status_update` |
+| Live [`pireps`](/api-reference/live/pireps) | Each update sent. | `pirep` |
+
+These routes are free: `GET /health`, `GET /api/v0/docs`, `GET /api/v0/pricing`, `GET /api/v0/facilities`, `GET /api/v0/facilities/search`, and `GET /api/v0/airlines`. Opening a live connection and subscribing are free, except for the first update of `flight_status` and `airport_status`.
+
+## Common cases
+
+<AccordionGroup>
+  <Accordion title="Empty results">
+    A transcript list or PIREP search that returns nothing costs nothing. An event search always costs one `event_query_page`, even when no event matches. A flight status whose `status` is `null` is free and carries no billing headers.
+  </Accordion>
+  <Accordion title="Requesting the same data again">
+    Every request is charged for what it returns, even if an earlier request returned the same transcript, event, or status. Store what you need instead of fetching it again.
+  </Accordion>
+  <Accordion title="Events with updates">
+    `GET /api/v0/events` and `GET /api/v0/events/{event_id}` return an event with all its updates nested in it, charged as one `event_pull`. The live `events` topic sends the event again each time it is updated, and each message is charged as one `event_push`.
+  </Accordion>
+  <Accordion title="First update of a subscription">
+    Subscribing to `flight_status` or `airport_status` sends the current status right away, and that first update is charged when you subscribe. For `flight_status` it is free when `status` is `null`. Other topics send nothing until new data arrives.
+  </Accordion>
+  <Accordion title="Reconnecting">
+    Subscriptions end when the connection closes. Subscribing again after a reconnect sends, and charges, a new first update for `flight_status` and `airport_status`.
+  </Accordion>
+  <Accordion title="Audio links">
+    Each call to `GET /api/v0/transcripts/{audio_sample_id}/audio` is charged, including a new link for a transmission whose earlier link expired. The rate per link depends on how many links the organization has been charged for this calendar month (UTC); see `price_bands` in the pricing response.
+  </Accordion>
+  <Accordion title="Answers">
+    An answer is charged for the records it reviewed, at least 300 and at most its `record_limit`. A failed answer (`502`), including one whose client disconnected before the response, is not charged. Retrying a request starts a new answer and is charged again. See [Create answer](/api-reference/answers/create).
+  </Accordion>
+</AccordionGroup>
+
+## Account tiers
+
+Each organization is in an account tier chosen by the age of its account and the total it has paid. A tier can limit how many of an item the organization may be charged for, either in total over the life of the account or per calendar month (UTC). [`GET /api/v0/pricing`](/api-reference/pricing) lists the tiers, what qualifies an organization for each, and their limits.
+
+## Refusals
+
+| Status | When |
+| --- | --- |
+| `402` | The organization's credits do not cover the request. `error` says how many credits were needed and how many are available, e.g. `insufficient credits: this needs 5 credits and 2 are available`. |
+| `403` | The charge would go over a limit of the organization's account tier (`error` starts with `account tier limit reached`), or the key is not owned by an organization. |
+
+On the live WebSocket, a refused charge for an update ends that subscription. The server sends `unsubscribed` with an `error` that says why, and no `request_id`. A refused charge for the first update of `flight_status` or `airport_status` is answered with an `error` message instead of `subscribed`. See [Connect](/api-reference/live/connect).
+
+Add credits in the [dashboard](https://api.enhancedradar.com).

@@ -14,7 +14,7 @@ An event is reported once and then updated as more transmissions about it arrive
 
 ## Query parameters
 
-Takes `since`, `until`, `callsign`, `facility_id`, `atc_channel_ids`, and `airline_id` as described in [Selecting data](/concepts/selecting-data). An event matches the window when its `happened_at` or one of its updates' `happened_at` is in it.
+Takes `since`, `until`, `callsign`, `facility_id`, `atc_channel_ids`, and `airline_id` as described in [Selecting data](/concepts/selecting-data). The window selects by `happened_at`, not `received_at`: an event matches when its `happened_at` as first reported, or the `happened_at` of any of its updates, is in it. See [Time windows by endpoint](/concepts/selecting-data#time-windows-by-endpoint).
 
 <ParamField query="q" type="string" required>
   What you are looking for, e.g. `laser strike on approach` or `aircraft returning to the gate`.
@@ -25,7 +25,7 @@ Takes `since`, `until`, `callsign`, `facility_id`, `atc_channel_ids`, and `airli
 </ParamField>
 
 <ParamField query="until" type="string" required>
-  End of the window, exclusive. Must be after `since` and at most 48 hours later.
+  End of the window, inclusive. Must be after `since` and at most 48 hours later.
 </ParamField>
 
 <ParamField query="callsign" type="string">
@@ -119,6 +119,10 @@ Results are the best matches in one page; there is no cursor. With `facility_id`
     </ResponseField>
   </Expandable>
 </ResponseField>
+
+## Billing
+
+Each search is charged as one `event_query_page`, even when nothing matches, and each event returned as one `event_pull`. An event's updates are included in its `event_pull`. See [Credits and billing](/concepts/billing).
 
 ## Errors
 

@@ -54,6 +54,10 @@ Scores depend on the query: an event that clearly matches one query can score lo
   Events are written by a language model from transcripts and can contain mistakes. Check important details against the transcripts.
 </Warning>
 
+## Billing
+
+Each message is charged as one `event_push` when it is sent: the first report and each later update of an event are separate messages. See [Credits and billing](/concepts/billing).
+
 ## Refusals
 
 The subscription is refused when:

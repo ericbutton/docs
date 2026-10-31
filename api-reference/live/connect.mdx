@@ -48,6 +48,12 @@ Every message in either direction is one JSON text message.
   </Step>
 </Steps>
 
+Each update is charged to your organization as it is sent; see [Credits and billing](/concepts/billing). When the charge for an update is refused because your credits do not cover it, it would go over a limit of your account tier, or the key is not owned by an organization, the update is not sent and the server ends the subscription with an `unsubscribed` message that has `error` and no `request_id`:
+
+```json
+{"message_type": "unsubscribed", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21", "subscription_topic": "pireps", "error": "insufficient credits: this needs 4 credits and 2 are available"}
+```
+
 A message the server cannot act on is answered with `error`. The connection stays open, and other subscriptions are not affected.
 
 ```json
@@ -83,7 +89,7 @@ A message the server cannot act on is answered with `error`. The connection stay
 </ResponseField>
 
 <ResponseField name="request_id" type="string">
-  The `request_id` of the client message this replies to. Absent on `update` and when the client sent none.
+  The `request_id` of the client message this replies to. Absent on `update`, on an `unsubscribed` the server sends when it ends a subscription, and when the client sent none.
 </ResponseField>
 
 <ResponseField name="subscription_id" type="string">
@@ -99,7 +105,7 @@ A message the server cannot act on is answered with `error`. The connection stay
 </ResponseField>
 
 <ResponseField name="error" type="string">
-  On `error` only: what was wrong, e.g. a missing or invalid parameter, or a failure on our side; retry those later.
+  On `error`: what was wrong, e.g. a missing or invalid parameter, a refused charge, or a failure on our side; retry those later. On an `unsubscribed` the server sends when it ends a subscription: why it ended it.
 </ResponseField>
 
 ## Topics
@@ -120,7 +126,7 @@ The server handles client messages one at a time, in the order they arrive, and 
 - Updates are not acknowledged, and there is no backfill: only what happens after a subscription starts is sent.
 - A client that falls 256 messages behind across all its subscriptions, or that does not accept a message within one second, is disconnected and should reconnect.
 - The server sends no messages of its own while nothing matches.
-- A connection with no traffic in either direction for 60 seconds is closed. Send a WebSocket ping at least every 30 seconds; the server answers each ping with a pong.
+- An idle connection can be closed by the network between you and the API. Send a WebSocket ping at least every 30 seconds; the server answers each ping with a pong.
 - A client message over 4 KiB closes the connection.
 
 The upgrade request itself returns `401` or `403` as described in [Errors](/concepts/errors); everything after that is reported with `error` messages.

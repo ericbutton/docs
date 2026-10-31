@@ -30,13 +30,16 @@
               "concepts/facilities-and-channels",
               "concepts/selecting-data",
               "concepts/times",
-              "concepts/errors"
+              "concepts/errors",
+              "concepts/billing",
+              "concepts/interpreting-results"
             ]
           },
           {
             "group": "Guides",
             "pages": [
-              "guides/live-updates"
+              "guides/live-updates",
+              "guides/mcp"
             ]
           }
         ]
@@ -47,7 +50,8 @@
           {
             "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/pricing"
             ]
           },
           {
@@ -151,5 +155,12 @@
       },
       "server": "https://api.enhancedradar.com"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/docs/api/:slug*",
+      "destination": "/:slug*",
+      "permanent": true
+    }
+  ]
 }
