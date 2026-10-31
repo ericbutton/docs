@@ -9,13 +9,13 @@ Returns one event and all its updates, in the same shape as an entry of [Search 
 ## Path parameters
 
 <ParamField path="event_id" type="integer" required>
-  An event's `event_id`. An `event_update_id` returns `404`.
+  An event's `event_id`, or the `event_update_id` of any of its updates. Either returns the whole event.
 </ParamField>
 
 ## Response
 
 <ResponseField name="event_id" type="integer">
-  Id of the event as first reported.
+  Id of the event as first reported. When you pass an `event_update_id`, this is the id of the event that update belongs to.
 </ResponseField>
 
 <ResponseField name="atc_channel_id" type="integer">
