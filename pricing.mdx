@@ -1,0 +1,107 @@
+---
+title: "Enhanced Radar API pricing"
+sidebarTitle: "Pricing"
+description: "Enhanced Radar API prices in US dollars for every route and live topic, audio clip volume bands, answer pricing, free routes, and account tier limits."
+keywords:
+  - "pricing"
+  - "price"
+  - "cost"
+  - "audio"
+  - "account tier"
+  - "rates"
+---
+
+The Enhanced Radar API is pay as you go. Your organization adds funds in the [dashboard](https://api.enhancedradar.com), and each request or live update is charged for the data it returns. There is no subscription fee, and lookups such as listing facilities are free.
+
+[`GET /api/v0/pricing`](/api-reference/pricing) lists the current prices and any scheduled price changes, and is free to call. For when a charge happens and what happens when your balance runs out, see [Billing](/concepts/billing).
+
+## Prices
+
+| Item | `priced_item` | Price |
+| --- | --- | --- |
+| Transcript | `transcript` | \$0.03 |
+| Audio clip | `transcript_audio` | \$0.02 to \$40.00, by monthly volume. See [Audio clips](#audio-clips). |
+| Event search page | `event_query_page` | \$1.00 |
+| Event, pulled | `event_pull` | \$1.00 |
+| Event, pushed live | `event_push` | \$5.00 |
+| Flight status | `flight_status_update` | \$0.12 |
+| Airport status | `airport_status_update` | \$1.50 |
+| PIREP | `pirep` | \$0.15 |
+| Answer record reviewed | `answer_record` | \$0.01, at least 300 records per answer |
+
+## Price by route
+
+| Route | Charged for | Price |
+| --- | --- | --- |
+| [`GET /api/v0/transcripts`](/api-reference/transcripts/list) | Each transcript returned. An empty page is free. | \$0.03 per transcript |
+| [`GET /api/v0/transcripts/{audio_sample_id}`](/api-reference/transcripts/get) | The transcript. | \$0.03 |
+| [`GET /api/v0/transcripts/{audio_sample_id}/audio`](/api-reference/transcripts/audio) | Each audio link. | \$0.02 to \$40.00 per link, by monthly volume |
+| [`GET /api/v0/events`](/api-reference/events/search) | Each search, even when nothing matches, plus each event returned. | \$1.00 per search plus \$1.00 per event |
+| [`GET /api/v0/events/{event_id}`](/api-reference/events/get) | The event, with all its updates. | \$1.00 |
+| [`GET /api/v0/flights/status`](/api-reference/flights/status) | The status. Free when `status` is `null`. | \$0.12 |
+| [`GET /api/v0/airports/status`](/api-reference/airports/status) | The status. | \$1.50 |
+| [`GET /api/v0/pireps`](/api-reference/pireps/search) | Each PIREP returned. An empty result is free. | \$0.15 per PIREP |
+| [`POST /api/v0/answers`](/api-reference/answers/create) | Each record reviewed, at least 300 and at most `record_limit`. | \$0.01 per record |
+
+## Price by live topic
+
+Opening a [live WebSocket](/api-reference/live/connect) and subscribing are free. Each update sent on a subscription is charged.
+
+| Topic | Charged for | Price |
+| --- | --- | --- |
+| [`transcripts`](/api-reference/live/transcripts) | Each transcript sent. | \$0.03 per transcript |
+| [`events`](/api-reference/live/events) | Each message: the first report of an event and each later update of it. | \$5.00 per message |
+| [`flight_status`](/api-reference/live/flight-status) | Each status sent, including the first, which is sent when you subscribe. A first status whose `status` is `null` is free. | \$0.12 per status |
+| [`airport_status`](/api-reference/live/airport-status) | Each status sent, including the first, which is sent when you subscribe. | \$1.50 per status |
+| [`pireps`](/api-reference/live/pireps) | Each PIREP sent. | \$0.15 per PIREP |
+
+## Free routes
+
+These routes are never charged:
+
+- [`GET /health`](/api-reference/health)
+- [`GET /api/v0/docs`](/api-reference/docs)
+- [`GET /api/v0/pricing`](/api-reference/pricing)
+- [`GET /api/v0/facilities`](/api-reference/facilities/list)
+- [`GET /api/v0/facilities/search`](/api-reference/facilities/search)
+- [`GET /api/v0/airlines`](/api-reference/airlines/list)
+
+A request that fails, such as one that returns `400`, `404`, or `5xx`, is not charged.
+
+## Audio clips
+
+Audio links are priced in bands by how many your organization has been charged for in the calendar month (UTC), counting the clip itself. Each clip is charged at the price of the band its number falls in. The count starts again at 1 on the first of each month.
+
+| Clip number this month | Price per clip |
+| --- | --- |
+| 1 to 500 | \$0.02 |
+| 501 to 1,000 | \$0.05 |
+| 1,001 to 2,000 | \$0.13 |
+| 2,001 to 3,000 | \$0.35 |
+| 3,001 to 5,000 | \$0.90 |
+| 5,001 to 10,000 | \$2.30 |
+| 10,001 to 15,000 | \$6.00 |
+| 15,001 to 50,000 | \$15.50 |
+| 50,001 and up | \$40.00 |
+
+Every request for an audio link is charged, including a new link for a transmission whose earlier link expired. Account tiers also limit how many audio clips an organization can be charged for; see [Account tiers](#account-tiers).
+
+## Answers
+
+[`POST /api/v0/answers`](/api-reference/answers/create) is charged \$0.01 for each record it reviews: transmissions, ADS-B positions, and FAA SWIM records. Each answer is charged for at least 300 records and at most its `record_limit`. `record_limit` is lowered to what your organization's balance covers. An answer that fails with `502` is not charged.
+
+## Account tiers
+
+Each organization is in an account tier chosen by the age of its account and the total it has paid. Tiers do not change prices. They limit how much of an item an organization can be charged for; a request that would go over a limit returns `403`.
+
+| Tier | Applies when | Limits |
+| --- | --- | --- |
+| `provisional` | Every new account | 500 audio clips over the life of the account |
+| `growth` | The account is at least 36 hours old and has paid at least \$1,000 in total | 10,000 audio clips over the life of the account |
+| `enterprise` | The account is at least 36 hours old and has paid at least \$50,000 in total | None |
+
+An organization is in the highest tier whose conditions it meets. [`GET /api/v0/pricing`](/api-reference/pricing) lists the tiers and their limits in `account_tiers`.
+
+## Price changes
+
+A price change is announced ahead of time in `scheduled_prices` of [`GET /api/v0/pricing`](/api-reference/pricing), with the time it takes effect in `effective_at`. Until then, `current_prices` holds the price you are charged. A request is charged the price in effect when it is charged.

@@ -48,22 +48,24 @@ When the client connects, it opens a browser window. Sign in to your Enhanced Ra
 
 ## Tools
 
-| Tool | What it does | Charged |
+| Tool | What it does | Price |
 | --- | --- | --- |
-| `search_facilities` | Turns an airport, TRACON, or center code or name into a `facility_id`. | No |
-| `get_facility` | Lists a facility's channels and their `atc_channel_id`s. | No |
-| `search_airlines` | Turns an airline code or name into an `airline_id`. | No |
-| `get_airport_status` | Runways in use, flight rules, flow, traffic programs, METAR and TAF, and what was heard on frequency at one airport. | Yes |
-| `get_transcripts` | Transmissions in a window of up to 48 hours, newest first, or the best matches for a text search. | Yes |
-| `get_transcript` | One transmission by `audio_sample_id`. | Yes |
-| `get_transcript_audio` | A link to one transmission's audio. The link expires 3 minutes after it is created. | Yes |
-| `search_events` | Notable things that happened on frequency, described in plain words. | Yes |
-| `get_event` | One event with all its updates. | Yes |
-| `get_flight_status` | The latest status of one flight as of a given time. | Yes |
-| `search_pireps` | Pilot weather reports within a radius of a point, in a window of up to 6 hours. | Yes |
+| `search_facilities` | Turns an airport, TRACON, or center code or name into a `facility_id`. | Free |
+| `get_facility` | Lists a facility's channels and their `atc_channel_id`s. | Free |
+| `search_airlines` | Turns an airline code or name into an `airline_id`. | Free |
+| `get_pricing` | What each charged item costs in US dollars, scheduled price changes, and account tiers, the same as [`GET /api/v0/pricing`](/api-reference/pricing). | Free |
+| `get_airport_status` | Runways in use, flight rules, flow, traffic programs, METAR and TAF, and what was heard on frequency at one airport. | \$1.50 |
+| `get_transcripts` | Transmissions in a window of up to 48 hours, newest first, or the best matches for a text search. | \$0.03 per transcript returned |
+| `get_transcript` | One transmission by `audio_sample_id`. | \$0.03 |
+| `get_transcript_audio` | A link to one transmission's audio. The link expires 3 minutes after it is created. | \$0.02 to \$40.00 per link, by monthly volume. See [Audio clips](/pricing#audio-clips). |
+| `search_events` | Notable things that happened on frequency, described in plain words. | \$1.00 per search plus \$1.00 per event returned |
+| `get_event` | One event with all its updates. | \$1.00 |
+| `get_flight_status` | The latest status of one flight as of a given time. | \$0.12, free when there is no status |
+| `search_pireps` | Pilot weather reports within a radius of a point, in a window of up to 6 hours. | \$0.15 per PIREP returned |
+| `answer_question` | Answers a question that needs several lookups combined, such as whether a flight diverted and why, with the evidence behind it. | \$0.01 per record reviewed, at least 300 and at most `record_limit` (default 1,000) |
 
-Charged tools are billed to your organization's credits the same way as the matching REST routes. See [Credits and billing](/concepts/billing).
+Tools are charged to your organization the same way as the matching REST routes. See [Pricing](/pricing) and [Billing](/concepts/billing).
 
 ## Access
 
-`search_facilities` works as soon as you sign in. The other tools need an account that has finished onboarding in the [dashboard](https://api.enhancedradar.com). When a tool reports that your account has not finished setup or is out of credits, follow the link in its message.
+`search_facilities` works as soon as you sign in. The other tools need an account that has finished onboarding in the [dashboard](https://api.enhancedradar.com). When a tool reports that your account has not finished setup or that its balance does not cover a request, follow the link in its message.

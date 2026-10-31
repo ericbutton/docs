@@ -35,7 +35,7 @@ JSON, at most 256 KiB.
 <ParamField body="record_limit" default="5000" type="integer">
   Most records to review, 300 to 50000. Research stops when it is reached, and the answer says what could not be checked. Lowered to what the organization's available balance covers.
 
-  This is also the most records one answer can be charged for. At the default of 5000 and the current rate of \$0.01 per record, one answer can cost up to \$50.00. Set `record_limit` to the most you want to spend on one answer.
+  This is also the most records one answer can be charged for. Each record reviewed costs \$0.01; for example, an answer that reviews 418 records, like the example response below, costs \$4.18.
 </ParamField>
 
 <ParamField body="evidence_limit" default="25" type="integer">
@@ -100,11 +100,11 @@ JSON, at most 256 KiB.
 
 ## Billing
 
-Each record reviewed costs \$0.01 USD, with a \$3.00 minimum per answer (300 records). For example, the 418 records charged in the response below cost \$4.18. Current rates and the billing-unit conversion are returned by `GET /api/v0/pricing`.
+Each record reviewed is charged as one `answer_record`, at \$0.01. An answer is charged for `records_charged` records: at least 300 and at most `record_limit`. See [Pricing](/pricing).
 
-The `X-Credits-Charged` and `X-Credit-Balance` response headers report the charge and remaining balance as integer billing units. Convert either value to USD with `header_value * usd_cents_per_credit / 100`, using `usd_cents_per_credit` from the pricing response. At the current conversion of \$0.01 per unit, a charge header of `418` means \$4.18, and a balance header of `100000` means \$1,000.00. The header names are part of the API contract; their raw values are not dollar amounts.
+The `X-Charged-Usd` and `X-Balance-Usd` response headers report the charge and the remaining balance in US dollars with three decimal places.
 
-Nothing is charged when an answer fails (`502`), including when the client disconnects before the response. A request is never deduplicated: retrying it starts a new answer, which is researched and charged again. See [Credits and billing](/concepts/billing).
+Nothing is charged when an answer fails (`502`), including when the client disconnects before the response. A request is never deduplicated: retrying it starts a new answer, which is researched and charged again. See [Billing](/concepts/billing).
 
 ## Errors
 

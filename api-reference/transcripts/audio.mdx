@@ -28,7 +28,21 @@ Returns a short-lived link to the WAV audio of one transmission. Download or pla
 
 ## Billing
 
-Each link is charged as one `transcript_audio`, including a new link for a transmission whose earlier link expired. The rate steps up with the number of links charged to your organization in the calendar month (UTC); see `price_bands` in [Get pricing](/api-reference/pricing) and [Credits and billing](/concepts/billing).
+Each link is charged as one `transcript_audio`, including a new link for a transmission whose earlier link expired. The price of a link depends on its number among the links charged to your organization in the calendar month (UTC), counting the link itself:
+
+| Link number this month | Price per link |
+| --- | --- |
+| 1 to 500 | \$0.02 |
+| 501 to 1,000 | \$0.05 |
+| 1,001 to 2,000 | \$0.13 |
+| 2,001 to 3,000 | \$0.35 |
+| 3,001 to 5,000 | \$0.90 |
+| 5,001 to 10,000 | \$2.30 |
+| 10,001 to 15,000 | \$6.00 |
+| 15,001 to 50,000 | \$15.50 |
+| 50,001 and up | \$40.00 |
+
+Account tiers limit how many links an organization can be charged for: 500 over the life of the account for `provisional`, and 10,000 for `growth`. See [Pricing](/pricing) and [Billing](/concepts/billing).
 
 ## Errors
 

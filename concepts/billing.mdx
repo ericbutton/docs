@@ -1,19 +1,26 @@
 ---
-title: "Credits and billing"
+title: "Billing"
 sidebarTitle: "Billing"
-description: "How the Enhanced Radar API charges credits: what each route and live topic costs, when a request is charged, account tier limits, and refusals."
-keywords: ["billing", "credits", "pricing", "402", "account tier", "X-Credits-Charged"]
+description: "How the Enhanced Radar API charges your balance in US dollars: what each route and live topic is charged for, when a request is charged, account tier limits, and refusals."
+keywords:
+  - "billing"
+  - "balance"
+  - "pricing"
+  - "402"
+  - "account tier"
+  - "X-Charged-Usd"
+  - "X-Balance-Usd"
 ---
 
-The Enhanced Radar API charges data in credits to the organization that owns the API key. This page explains which routes and live topics are charged, when a charge happens, and what happens when credits run out. Prices themselves come from [`GET /api/v0/pricing`](/api-reference/pricing), which is free to call.
+The Enhanced Radar API charges data in US dollars to the balance of the organization that owns the API key. This page explains which routes and live topics are charged, when a charge happens, and what happens when the balance runs out. Prices are listed on [Pricing](/pricing) and returned by [`GET /api/v0/pricing`](/api-reference/pricing), which is free to call.
 
 ## How a charge works
 
-- Each charged item has a `priced_item` name and a price in credits, listed by [`GET /api/v0/pricing`](/api-reference/pricing). `usd_cents_per_credit` in the same response converts credits to US cents.
+- Each charged item has a `priced_item` name and a price in US dollars, listed by [`GET /api/v0/pricing`](/api-reference/pricing).
 - A request is charged all at once, after its data is loaded and before it is returned.
 - When the charge is refused, the request returns `402` or `403`, nothing is returned, and nothing is charged. See [Refusals](#refusals).
 - A request that fails for another reason, such as `400`, `404`, or `5xx`, is not charged.
-- Responses from charged routes carry two headers: `X-Credits-Charged`, the credits the request cost, and `X-Credit-Balance`, the organization's balance after it. Both are integer credits, not dollar amounts.
+- Responses from charged routes carry two headers: `X-Charged-Usd`, what the request cost, and `X-Balance-Usd`, the organization's balance after it. Both are US dollars with three decimal places, e.g. `0.030` and `987.650`.
 
 To see the charge for any request, print the response headers:
 
@@ -77,9 +84,9 @@ Each organization is in an account tier chosen by the age of its account and the
 
 | Status | When |
 | --- | --- |
-| `402` | The organization's credits do not cover the request. `error` says how many credits were needed and how many are available, e.g. `insufficient credits: this needs 5 credits and 2 are available`. |
+| `402` | The organization's balance does not cover the request. `error` says how much was needed and how much is available, in US dollars, e.g. `insufficient balance: this needs $0.050 and $0.020 is available`. |
 | `403` | The charge would go over a limit of the organization's account tier (`error` starts with `account tier limit reached`), or the key is not owned by an organization. |
 
 On the live WebSocket, a refused charge for an update ends that subscription. The server sends `unsubscribed` with an `error` that says why, and no `request_id`. A refused charge for the first update of `flight_status` or `airport_status` is answered with an `error` message instead of `subscribed`. See [Connect](/api-reference/live/connect).
 
-Add credits in the [dashboard](https://api.enhancedradar.com).
+Add funds in the [dashboard](https://api.enhancedradar.com).

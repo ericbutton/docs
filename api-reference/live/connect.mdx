@@ -48,10 +48,10 @@ Every message in either direction is one JSON text message.
   </Step>
 </Steps>
 
-Each update is charged to your organization as it is sent; see [Credits and billing](/concepts/billing). When the charge for an update is refused because your credits do not cover it, it would go over a limit of your account tier, or the key is not owned by an organization, the update is not sent and the server ends the subscription with an `unsubscribed` message that has `error` and no `request_id`:
+Each update is charged to your organization as it is sent; see [Billing](/concepts/billing). When the charge for an update is refused because your balance does not cover it, it would go over a limit of your account tier, or the key is not owned by an organization, the update is not sent and the server ends the subscription with an `unsubscribed` message that has `error` and no `request_id`:
 
 ```json
-{"message_type": "unsubscribed", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21", "subscription_topic": "pireps", "error": "insufficient credits: this needs 4 credits and 2 are available"}
+{"message_type": "unsubscribed", "subscription_id": "6a0f5d6e-2b8c-4f0e-9a4d-1c7e3b5f8d21", "subscription_topic": "pireps", "error": "insufficient balance: this needs $0.040 and $0.020 is available"}
 ```
 
 A message the server cannot act on is answered with `error`. The connection stays open, and other subscriptions are not affected.
@@ -117,6 +117,20 @@ A message the server cannot act on is answered with `error`. The connection stay
 | `flight_status` | [Flight status topic](/api-reference/live/flight-status) |
 | `airport_status` | [Airport status topic](/api-reference/live/airport-status) |
 | `pireps` | [PIREPs topic](/api-reference/live/pireps) |
+
+## Billing
+
+Opening a connection and subscribing are free. Each update sent is charged at the price of its topic:
+
+| Topic | Charged for | Price |
+| --- | --- | --- |
+| `transcripts` | Each transcript sent. | \$0.03 per transcript |
+| `events` | Each message: the first report of an event and each later update of it. | \$5.00 per message |
+| `flight_status` | Each status sent, including the first. A first status whose `status` is `null` is free. | \$0.12 per status |
+| `airport_status` | Each status sent, including the first. | \$1.50 per status |
+| `pireps` | Each PIREP sent. | \$0.15 per PIREP |
+
+The first update of `flight_status` and `airport_status` is charged when you subscribe; if that charge is refused, the server answers with `error` instead of `subscribed`. If the charge for a later update is refused, that subscription ends: the server sends `unsubscribed` with an `error` that says why. See [Pricing](/pricing) and [Billing](/concepts/billing).
 
 ## Behavior
 

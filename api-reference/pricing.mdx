@@ -1,16 +1,12 @@
 ---
 title: "Get pricing"
-description: "GET /api/v0/pricing: returns the current credit price of each charged item, scheduled price changes, and account tiers with their limits."
+description: "GET /api/v0/pricing: returns the current US dollar price of each charged item, scheduled price changes, and account tiers with their limits."
 api: "GET /api/v0/pricing"
 ---
 
-Returns what each charged item of the Enhanced Radar API costs in credits, price changes scheduled for later, and the account tiers with their limits. This route is free and accepts the `api:onboarding` permission as well as `api:read`. See [Credits and billing](/concepts/billing) for which routes charge which items.
+Returns what each charged item of the Enhanced Radar API costs in US dollars, price changes scheduled for later, and the account tiers with their limits. This route is free and accepts the `api:onboarding` permission as well as `api:read`. See [Pricing](/pricing) for every price, and [Billing](/concepts/billing) for which routes charge which items.
 
 ## Response
-
-<ResponseField name="usd_cents_per_credit" type="integer">
-  What one credit costs, in US cents.
-</ResponseField>
 
 <ResponseField name="current_prices" type="array">
   The price in effect now for each item.
@@ -37,7 +33,7 @@ Returns what each charged item of the Enhanced Radar API costs in credits, price
     </ResponseField>
 
     <ResponseField name="price_bands" type="array">
-      The rates, lowest `from_quantity` first. A unit is charged the `credits_per_unit` of the band whose range contains its number.
+      The rates, lowest `from_quantity` first. A unit is charged the `usd_per_unit` of the band whose range contains its number.
 
       <Expandable title="band">
         <ResponseField name="from_quantity" type="integer">
@@ -48,8 +44,8 @@ Returns what each charged item of the Enhanced Radar API costs in credits, price
           Last unit number of the band. `null` for the last band.
         </ResponseField>
 
-        <ResponseField name="credits_per_unit" type="integer">
-          Credits charged for each unit in the band.
+        <ResponseField name="usd_per_unit" type="number">
+          Price of each unit in the band, in US dollars with three decimal places, e.g. `0.030`.
         </ResponseField>
       </Expandable>
     </ResponseField>
