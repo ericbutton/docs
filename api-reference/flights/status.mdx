@@ -50,6 +50,10 @@ Returns the latest status of one flight as of a given time: a one-sentence summa
   Statuses are written by a language model from transcripts and can contain mistakes. Check important details against the transcripts from `GET /api/v0/transcripts?callsign=...`.
 </Warning>
 
+## Billing
+
+A status is charged as one `flight_status_update`. A response whose `status` is `null` is free and carries no billing headers. See [Credits and billing](/concepts/billing).
+
 ## Errors
 
 | Status | Meaning |

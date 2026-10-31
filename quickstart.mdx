@@ -1,52 +1,130 @@
 ---
 title: "Quickstart"
-description: "Make your first Enhanced Radar API request: find a facility, list transcripts, and download a transmission's audio."
+description: "Create an API key, find a covered airport, list its latest ATC transcripts, and download one transmission's audio with the Enhanced Radar API."
 ---
 
-## Prerequisites
+This quickstart takes you from a new account to a played ATC transmission. You create an API key, find a covered airport, list its latest transcripts, and download one transmission's audio. Each step shows what the response looks like and which value to carry into the next step.
 
-You need an API key with the `api:read` permission. Keys are issued by Enhanced Radar. See [Authentication](/authentication).
+You need `curl` and [`jq`](https://jqlang.org).
 
 <Steps>
-  <Step title="Store your API key">
+  <Step title="Create an API key">
+    Sign in to the [dashboard](https://api.enhancedradar.com) and complete onboarding: your profile, phone verification, identity verification, and a payment method.
+
+    Then open **Keys**, choose **Create key**, and give the key a name. Copy the secret key and store it somewhere safe; it is shown only once, when it is created.
+
     Keep the key in an environment variable. Never embed it in browser or mobile client code.
 
     ```bash
     export ER_API_KEY="sk_..."
     ```
   </Step>
-  <Step title="Find a facility">
-    List the facilities we cover and their channels. Note a `facility_id` and check that its channels have `is_available` set to `true`.
+  <Step title="Check what requests cost">
+    [`GET /api/v0/pricing`](/api-reference/pricing) is free. This quickstart is charged for 5 transcripts (`transcript`) and 1 audio link (`transcript_audio`).
 
     ```bash
-    curl -H "Authorization: Bearer $ER_API_KEY" \
-      "https://api.enhancedradar.com/api/v0/facilities"
+    curl -s -H "Authorization: Bearer $ER_API_KEY" \
+      "https://api.enhancedradar.com/api/v0/pricing" \
+      | jq '.current_prices[] | select(.priced_item == "transcript" or .priced_item == "transcript_audio") | {priced_item, price_bands}'
     ```
 
-    To find a facility by code or name, use [Search facilities](/api-reference/facilities/search):
-
-    ```bash
-    curl -H "Authorization: Bearer $ER_API_KEY" \
-      "https://api.enhancedradar.com/api/v0/facilities/search?q=san&facility_type=airport&limit=3"
-    ```
+    Multiply credits by `usd_cents_per_credit` from the same response for US cents. See [Credits and billing](/concepts/billing).
   </Step>
-  <Step title="List transcripts">
-    Request transcripts for a time window of up to 48 hours. `since` and `until` are required.
+  <Step title="Find a covered airport">
+    Search for an airport by code or name. Search is free.
 
     ```bash
-    curl -H "Authorization: Bearer $ER_API_KEY" \
-      "https://api.enhancedradar.com/api/v0/transcripts?since=2026-10-22T20:00:00Z&until=2026-10-22T23:00:00Z&facility_id=3667d976-1566-4887-ae34-c024d92f46c7"
+    curl -s -H "Authorization: Bearer $ER_API_KEY" \
+      "https://api.enhancedradar.com/api/v0/facilities/search?q=SFO&facility_type=airport&limit=1"
     ```
 
-    Transcripts come back newest first. To get the next page, pass `next_cursor` as `cursor` with the same `since`, `until`, and filters.
+    ```json
+    {
+      "facilities": [
+        {
+          "facility_id": "3667d976-1566-4887-ae34-c024d92f46c7",
+          "facility_type": "airport",
+          "facility_code": "SFO",
+          "facility_name": "San Francisco",
+          "airport_municipality": "San Francisco, CA"
+        }
+      ]
+    }
+    ```
+
+    Search finds every airport we know about, not only the ones we cover. Check that the facility is in [`GET /api/v0/facilities`](/api-reference/facilities/list) and count its available channels:
+
+    ```bash
+    export FACILITY_ID="3667d976-1566-4887-ae34-c024d92f46c7"
+    
+    curl -s -H "Authorization: Bearer $ER_API_KEY" \
+      "https://api.enhancedradar.com/api/v0/facilities" \
+      | jq --arg id "$FACILITY_ID" '.facilities[] | select(.facility_id == $id) | [.channel_categories[].atc_channels[] | select(.is_available)] | length'
+    ```
+
+    A number above `0` means the API serves data for this airport. No output means we don't cover it; pick another airport.
   </Step>
-  <Step title="Get the audio">
-    Take an `audio_sample_id` from a transcript and request a short-lived link to its WAV audio. The link expires 3 minutes after the response.
+  <Step title="List the latest transcripts">
+    Request the last hour of transcripts at that airport, at most 5. The commands below build the window on both macOS and Linux.
 
     ```bash
-    curl -H "Authorization: Bearer $ER_API_KEY" \
-      "https://api.enhancedradar.com/api/v0/transcripts/29e13bdf-08fa-4e44-87a5-ed81a17919a7/audio"
+    export UNTIL=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    export SINCE=$(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-1H +%Y-%m-%dT%H:%M:%SZ)
+    
+    curl -s -D transcripts-headers.txt -H "Authorization: Bearer $ER_API_KEY" \
+      "https://api.enhancedradar.com/api/v0/transcripts?since=$SINCE&until=$UNTIL&facility_id=$FACILITY_ID&limit=5" \
+      > transcripts.json
+    
+    jq '.transcripts[] | {audio_sample_id, received_at, transcript}' transcripts.json
     ```
+
+    ```json
+    {
+      "audio_sample_id": "29e13bdf-08fa-4e44-87a5-ed81a17919a7",
+      "received_at": "2026-10-22T22:40:50.311224173Z",
+      "transcript": "Iconic 776, uh San Francisco Tower, runway 28R at E cleared for takeoff"
+    }
+    ```
+
+    Transcripts come back newest first. `received_at` is when the transmission's audio clip ended.
+
+    <Note>
+      If `transcripts` is empty, there was no traffic on the airport's available channels in that hour. Widen the window (up to 48 hours) or try a busier airport. An empty list is not charged. See [Interpreting results](/concepts/interpreting-results).
+    </Note>
+  </Step>
+  <Step title="Download a transmission's audio">
+    Take the newest `audio_sample_id`, request a link to its WAV audio, and download it. The link expires 3 minutes after the response, so download it right away.
+
+    ```bash
+    export AUDIO_SAMPLE_ID=$(jq -r '.transcripts[0].audio_sample_id' transcripts.json)
+    
+    curl -s -D audio-headers.txt -H "Authorization: Bearer $ER_API_KEY" \
+      "https://api.enhancedradar.com/api/v0/transcripts/$AUDIO_SAMPLE_ID/audio" \
+      > audio.json
+    
+    curl -s -o transmission.wav "$(jq -r '.audio_link' audio.json)"
+    ```
+
+    `audio.json` looks like this:
+
+    ```json
+    {
+      "audio_sample_id": "29e13bdf-08fa-4e44-87a5-ed81a17919a7",
+      "audio_link": "https://.../audio.wav?Policy=...&Signature=...&Key-Pair-Id=...",
+      "audio_link_expires_at": "2026-10-22T23:44:06.102311Z"
+    }
+    ```
+
+    Play `transmission.wav` with any audio player, for example `afplay transmission.wav` on macOS.
+  </Step>
+  <Step title="See what it cost">
+    Every charged response carries `X-Credits-Charged`, the credits the request cost, and `X-Credit-Balance`, your organization's balance after it. The two requests above saved their headers:
+
+    ```bash
+    grep -i '^x-credit' transcripts-headers.txt audio-headers.txt
+    ```
+
+    The dashboard also shows your organization's usage and balance.
   </Step>
 </Steps>
 
@@ -59,5 +137,13 @@ You need an API key with the `api:read` permission. Keys are issued by Enhanced 
 
   <Card title="Stream live data" icon="bolt" href="/guides/live-updates">
     Subscribe to transcripts and statuses over one WebSocket.
+  </Card>
+
+  <Card title="Interpreting results" icon="circle-question" href="/concepts/interpreting-results">
+    What empty lists, null statuses, and updates mean.
+  </Card>
+
+  <Card title="Connect an AI assistant" icon="robot" href="/guides/mcp">
+    Use the same data from Claude, Cursor, or another MCP client.
   </Card>
 </Columns>

@@ -39,7 +39,7 @@ See [Connect](/api-reference/live/connect) for the full message format.
 
 ## Keep the connection alive
 
-- A connection with no traffic in either direction for 60 seconds is closed.
+- An idle connection can be closed by the network between you and the API.
 - Send a WebSocket ping at least every 30 seconds. The server answers each ping with a pong.
 - The server sends no messages of its own while nothing matches, so don't rely on updates to keep the connection open.
 
@@ -50,6 +50,8 @@ Reconnect whenever the connection closes. Subscriptions belong to the connection
 - There is no backfill: only what happens after a subscription starts is sent. Use the pull endpoints, such as [`GET /api/v0/transcripts`](/api-reference/transcripts/list), to fill any gap.
 - A client that falls 256 messages behind across all its subscriptions, or that does not accept a message within one second, is disconnected. Read messages promptly.
 - A client message over 4 KiB closes the connection.
+- Subscribing to `flight_status` or `airport_status` again sends, and charges, a new first update. See [Credits and billing](/concepts/billing).
+- A subscription can also end without the connection closing: when the charge for an update is refused, the server sends `unsubscribed` with an `error`. Resolve the cause it names, such as insufficient credits, before subscribing again.
 
 ## Order and replace updates
 

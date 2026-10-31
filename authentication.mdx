@@ -15,7 +15,8 @@ curl -H "Authorization: Bearer $ER_API_KEY" "https://api.enhancedradar.com/api/v
 
 ## API keys
 
-- Keys are issued by Enhanced Radar through WorkOS.
+- Create keys in the [dashboard](https://api.enhancedradar.com): sign in, complete onboarding, then open **Keys** and choose **Create key**. See the [Quickstart](/quickstart).
+- A key belongs to your organization, and its usage is charged to your organization's credits. See [Credits and billing](/concepts/billing).
 - A key is shown once, when it is created. Store it as a secret.
 - Never embed a key in browser or mobile client code.
 - Revoked keys stop working within 60 seconds.
@@ -28,6 +29,7 @@ Every route requires the `api:read` permission, with two exceptions:
 | --- | --- |
 | `GET /health` | None. The route is public. |
 | `GET /api/v0/facilities/search` | `api:read` or `api:onboarding` |
+| `GET /api/v0/pricing` | `api:read` or `api:onboarding` |
 
 ## WebSocket connections
 
@@ -42,3 +44,7 @@ For [`GET /api/v0/live`](/api-reference/live/connect), send the key on the WebSo
 | `503` | The key could not be validated because the authentication provider is unavailable. Retry later. |
 
 See [Errors](/concepts/errors) for all status codes.
+
+## AI assistants
+
+To use the API from Claude, Cursor, or another MCP client, connect the [MCP server](/guides/mcp) instead of pasting a key. It signs in with your Enhanced Radar account over OAuth.

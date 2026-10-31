@@ -112,6 +112,10 @@ A `facility_id` or `atc_channel_ids` entry that is not in `GET /api/v0/facilitie
 
 With `callsign` or `airline_id`, a transmission attributed to more than one matching flight is returned once. Because of that, a page can hold fewer than `limit` transcripts even when more follow. Keep requesting pages until `next_cursor` is `null`.
 
+## Billing
+
+Each transcript returned is charged as one `transcript`. An empty page costs nothing. See [Credits and billing](/concepts/billing).
+
 <RequestExample>
 
 ```bash By callsign

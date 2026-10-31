@@ -25,6 +25,10 @@ The first update is the current status, sent right after `subscribed`. After tha
 
 Observations that age out of the 60-minute window do not cause an update; they are left out of the next one. Use `generated_at` to order updates and to ignore one older than a status you already have.
 
+## Billing
+
+Each update is charged as one `airport_status_update` when it is sent, including the first, which is charged when you subscribe. Subscribing again, including after a reconnect, charges a new first update. See [Credits and billing](/concepts/billing).
+
 ## Refusals
 
-The subscription is refused when `facility_id` is missing or not a uuid, is not a covered facility, or is not an airport, or when the airport status could not be loaded; retry later.
+The subscription is refused when `facility_id` is missing or not a uuid, is not a covered facility, or is not an airport; when the charge for the first update is refused; or when the airport status could not be loaded; retry that last case later.

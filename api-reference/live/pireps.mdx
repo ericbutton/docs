@@ -50,6 +50,10 @@ Each update's `data` has the same fields as one entry of `pireps` in [Search PIR
 
 Use [Search PIREPs](/api-reference/pireps/search) for reports stored before the subscription started. A PIREP is usually stored a few minutes after it is heard, so updates arrive in the order PIREPs are stored, not the order they happened; use `happened_at` to order them.
 
+## Billing
+
+Each update is charged as one `pirep` when it is sent. See [Credits and billing](/concepts/billing).
+
 ## Refusals
 
 The subscription is refused when a required parameter is missing or a parameter is invalid, or when the search could not be prepared; retry later.

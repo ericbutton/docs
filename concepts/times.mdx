@@ -9,10 +9,10 @@ description: "Time formats, precision, and ordering in the Enhanced Radar API."
 
 ## Precision and ordering of `received_at`
 
-A transmission's `received_at` is when the transmission ended.
+A transmission's `received_at` is the time its audio clip ended.
 
 - It is accurate to within 20 seconds.
 - The order of transmissions by `received_at` is exact.
 - A transmission always has the same `received_at` in every response.
 
-`since` and `until` select by `received_at` as the API returns it. Times derived from transmissions, such as an event's `happened_at` or a flight's `status_at`, have the same 20-second accuracy.
+Each endpoint's `since` and `until` select by its own timestamp, as the API returns it; see [Time windows by endpoint](/concepts/selecting-data#time-windows-by-endpoint). Times derived from transmissions, such as an event's `happened_at` or a flight's `status_at`, have the same 20-second accuracy.

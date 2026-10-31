@@ -7,8 +7,8 @@ Pull endpoints that return records over time share these query parameters. `sinc
 
 | Name | Required | Description |
 | --- | --- | --- |
-| `since` | yes | Start of the window, inclusive. |
-| `until` | yes | End of the window, exclusive. Must be after `since` and at most 48 hours later. |
+| `since` | yes | Start of the window. RFC 3339. |
+| `until` | yes | End of the window. Must be after `since` and at most 48 hours later. |
 | `callsign` | no | ICAO callsign, e.g. `UAL406`. Case-insensitive. |
 | `facility_id` | no | A `facility_id` from `GET /api/v0/facilities`. Selects records from that facility's available channels. |
 | `atc_channel_ids` | no | Comma-separated `atc_channel_id` values from `GET /api/v0/facilities`, e.g. `4,7,8`. Selects records from those channels. Every channel must have `is_available` set; otherwise the request returns `400`. With `facility_id`, only channels that are in the list and in the facility are used. |
@@ -19,13 +19,32 @@ These parameters apply to:
 - [`GET /api/v0/transcripts`](/api-reference/transcripts/list)
 - [`GET /api/v0/events`](/api-reference/events/search)
 
-`since` and `until` select by `received_at` as the API returns it. See [Times](/concepts/times).
+## Time windows by endpoint
+
+Each endpoint compares `since` and `until` with its own timestamp, as the API returns it. See [Times](/concepts/times).
+
+| Endpoint | Window selects by | Maximum window | Window bounds | Order |
+| --- | --- | --- | --- | --- |
+| [`GET /api/v0/transcripts`](/api-reference/transcripts/list) | The transcript's `received_at`. | 48 hours | `since` inclusive, `until` exclusive | Newest first; best match first with `q`. |
+| [`GET /api/v0/events`](/api-reference/events/search) | The `happened_at` of the event as first reported, or of any of its updates. | 48 hours | `since` and `until` inclusive | Best match first. |
+| [`GET /api/v0/pireps`](/api-reference/pireps/search) | The PIREP's `happened_at`. | 6 hours | `since` inclusive, `until` exclusive | Best match first. |
+| [`GET /api/v0/flights/status`](/api-reference/flights/status) | Transmissions with `received_at` in the hour before `at`. | Not applicable | Not applicable | One status. |
+
+### An event updated later
+
+An event is returned when its first report or any of its updates happened inside the window, and it is always returned with all its updates. For example, an event first reported with `happened_at` 14:10 and updated with `happened_at` 14:45:
+
+| Window | Returned? |
+| --- | --- |
+| 14:00 to 14:30 | Yes, because the first report is inside. |
+| 14:30 to 15:00 | Yes, because an update is inside. The top-level `happened_at` is still 14:10. |
+| 15:00 to 16:00 | No. |
 
 ## Exceptions
 
-- [`GET /api/v0/pireps`](/api-reference/pireps/search) selects by area instead, and its window is at most 6 hours.
+- [`GET /api/v0/pireps`](/api-reference/pireps/search) selects by area instead of these filters, and its window is at most 6 hours.
 - Live subscriptions on [`GET /api/v0/live`](/api-reference/live/connect) take their own parameters, listed for each topic.
 
 ## Coverage
 
-Data is returned only for channels marked `is_available` in `GET /api/v0/facilities`. See [Facilities and channels](/concepts/facilities-and-channels).
+Data is returned only for channels marked `is_available` in `GET /api/v0/facilities`. See [Facilities and channels](/concepts/facilities-and-channels) and [Interpreting results](/concepts/interpreting-results).

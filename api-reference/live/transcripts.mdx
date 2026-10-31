@@ -39,6 +39,10 @@ Each update's `data` has the same fields as one entry of `transcripts` in [List 
 - Use `received_at` to order transcripts.
 - Use [Get transcript audio](/api-reference/transcripts/audio) for a transmission's audio.
 
+## Billing
+
+Each update is charged as one `transcript` when it is sent. See [Credits and billing](/concepts/billing).
+
 ## Refusals
 
 The subscription is refused when no parameter was given, or when a filter is invalid, such as an unknown `airline_id`, a facility that is not covered, an unavailable channel, or `atc_channel_ids` with none on `facility_id`.

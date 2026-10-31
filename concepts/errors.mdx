@@ -17,12 +17,13 @@ Read `error` for the reason. Every response carries an `X-Request-ID` header; in
 | --- | --- |
 | `400` | A parameter is missing or invalid. `error` says which. |
 | `401` | The `Authorization` header is missing, or the key is invalid, revoked, or expired. Body `{"data": null, "error": "unauthorized"}`. |
-| `403` | The key lacks the permission the route requires. Body `{"data": null, "error": "forbidden"}`. |
+| `402` | The organization's credits do not cover the request. Nothing is returned or charged. `error` says how many credits were needed and how many are available. See [Credits and billing](/concepts/billing). |
+| `403` | The key lacks the permission the route requires (body `{"data": null, "error": "forbidden"}`), the charge would go over a limit of the organization's account tier (`error` starts with `account tier limit reached`), or the key is not owned by an organization. Nothing is returned or charged. |
 | `500` | The request failed on our side. Retry later. |
 | `503` | The key could not be validated because the authentication provider is unavailable. Retry later. |
 
-Some routes return additional codes, such as `404` for an unknown id, `402` and `502` on [`POST /api/v0/answers`](/api-reference/answers/create), and `504` on [`GET /api/v0/pireps`](/api-reference/pireps/search). Each endpoint page lists them.
+Some routes return additional codes, such as `404` for an unknown id, `502` on [`POST /api/v0/answers`](/api-reference/answers/create), and `504` on [`GET /api/v0/pireps`](/api-reference/pireps/search). Each endpoint page lists them.
 
 ## WebSocket errors
 
-On [`GET /api/v0/live`](/api-reference/live/connect), the upgrade request returns `401` or `403` as above. After the connection opens, problems are reported as `error` messages and the connection stays open.
+On [`GET /api/v0/live`](/api-reference/live/connect), the upgrade request returns `401` or `403` as above. After the connection opens, problems are reported as `error` messages and the connection stays open. When a charge for an update is refused, the server ends that subscription with an `unsubscribed` message that carries `error`.

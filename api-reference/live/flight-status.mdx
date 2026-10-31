@@ -26,6 +26,10 @@ After that, each transmission on an available channel that is attributed to the 
   Statuses are written by a language model from transcripts and can contain mistakes. Check important details against the transcripts from `GET /api/v0/transcripts?callsign=...`.
 </Warning>
 
+## Billing
+
+Each update is charged as one `flight_status_update` when it is sent. The first update is charged when you subscribe, unless its `status` is `null`, and again each time you subscribe, including after a reconnect. See [Credits and billing](/concepts/billing).
+
 ## Refusals
 
-The subscription is refused when `callsign` is missing, or when the flight status could not be loaded; retry later.
+The subscription is refused when `callsign` is missing, when the charge for the first update is refused, or when the flight status could not be loaded; retry that last case later.
