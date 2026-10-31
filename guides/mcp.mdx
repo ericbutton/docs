@@ -58,11 +58,14 @@ When the client connects, it opens a browser window. Sign in to your Enhanced Ra
 | `get_transcript` | One transmission by `audio_sample_id`. | Yes |
 | `get_transcript_audio` | A link to one transmission's audio. The link expires 3 minutes after it is created. | Yes |
 | `search_events` | Notable things that happened on frequency, described in plain words. | Yes |
-| `get_event` | One event with all its updates. | Yes |
+| `get_event` | One event with all its updates, by its `event_id` or the `event_update_id` of any of its updates. | Yes |
 | `get_flight_status` | The latest status of one flight as of a given time. | Yes |
 | `search_pireps` | Pilot weather reports within a radius of a point, in a window of up to 6 hours. | Yes |
+| `answer_question` | Researches a question across radio transcripts, ADS-B positions, FAA SWIM records, weather, and the web, and returns the answer with its evidence. Takes from several seconds to a few minutes. | Yes |
 
 Charged tools are billed to your organization's credits the same way as the matching REST routes. See [Credits and billing](/concepts/billing).
+
+`answer_question` works like [Create answer](/api-reference/answers/create), with two differences for agents: it takes one self-contained `question` instead of a `messages` history, and its `record_limit` defaults to 1000 instead of 5000. `record_limit` is also the most records the answer can be charged for, so an agent can set it as a budget. Clients that send a progress token receive a progress notification after each research step.
 
 ## Access
 
